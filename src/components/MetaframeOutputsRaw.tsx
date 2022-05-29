@@ -1,10 +1,10 @@
 import { FunctionalComponent } from "preact";
 import { useContext } from "preact/hooks";
-import { MetaframeContext } from "@metapages/metaframe-hook";
+import { MetaframeAndInputsContext } from "@metapages/metaframe-hook";
 import { Badge } from "@chakra-ui/react";
 
 export const MetaframeOutputsRaw: FunctionalComponent = () => {
-  const metaframe = useContext(MetaframeContext);
+  const metaframe = useContext(MetaframeAndInputsContext);
   return (
     <div>
       <Badge>metaframe inputs:</Badge>{" "}

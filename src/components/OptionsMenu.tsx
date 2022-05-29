@@ -16,7 +16,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { CheckIcon, CloseIcon, SettingsIcon } from "@chakra-ui/icons";
-import { useHashParamJson } from "@metapages/metaframe-hook";
+import { useHashParamJson } from "@metapages/hash-query";
 
 type OptionType = "string" | "boolean" | "option";
 

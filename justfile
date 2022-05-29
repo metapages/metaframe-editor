@@ -1,8 +1,8 @@
 ###############################################################
 # Minimal commands to develop, build, test, and deploy
 ###############################################################
-# just docs: https://github.com/casey/just
 set shell                          := ["bash", "-c"]
+set dotenv-load                    := true
 # Change this to anything else to NOT publish a seperate npm module
 NPM_PUBLISH                        := "true"
 # E.g. 'my.app.com'. Some services e.g. auth need know the external endpoint for example OAuth
@@ -57,7 +57,7 @@ dev:
         just _docker just _dev;
     fi
 
-_dev: _ensure_npm_modules (_tsc "--build")
+_dev: _mkcert _ensure_npm_modules (_tsc "--build")
     #!/usr/bin/env bash
     set -euo pipefail
     APP_ORIGIN=https://${APP_FQDN}:${APP_PORT}
@@ -188,6 +188,10 @@ _tsc +args="": _ensure_npm_modules
 # DEV: generate TLS certs for HTTPS over localhost https://blog.filippo.io/mkcert-valid-https-certificates-for-localhost/
 _mkcert:
     #!/usr/bin/env bash
+    if [ -f /.dockerenv ]; then
+        exit 0
+    fi
+
     if [ -n "$CI" ]; then
         echo "CI=$CI ∴ skipping mkcert"
         exit 0

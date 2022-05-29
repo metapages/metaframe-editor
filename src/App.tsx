@@ -8,28 +8,14 @@
  */
 
 import { FunctionalComponent } from "preact";
-import { useEffect, useState, useCallback } from "preact/hooks";
-import {
-  Box,
-  Button,
-  Flex,
-  HStack,
-  Spacer,
-  VStack,
-} from "@chakra-ui/react";
-import {
-  MetaframeObject,
-  useMetaframe,
-  useHashParamJson,
-  useHashParamBase64,
-} from "@metapages/metaframe-hook";
-import {
-  isIframe,
-} from "@metapages/metapage";
+import { useEffect, useState, useCallback, useRef } from "preact/hooks";
+import { Box, Button, Flex, HStack, Spacer, VStack } from "@chakra-ui/react";
+import { useMetaframeAndInput } from "@metapages/metaframe-hook";
+import { useHashParamJson, useHashParamBase64 } from "@metapages/hash-query";
+import { isIframe } from "@metapages/metapage";
 import { Editor } from "./components/Editor";
 import { Option, OptionsMenuButton } from "./components/OptionsMenu";
-import { EditableText } from "./components/EditableText";
-import { ButtonHelp } from './components/ButtonHelp';
+import { ButtonHelp } from "./components/ButtonHelp";
 
 const appOptions: Option[] = [
   {
@@ -40,8 +26,16 @@ const appOptions: Option[] = [
     options: ["json", "javascript", "python", "sh"],
   },
   {
-    name: "noautosendonce",
-    displayName: "Only send when Save/Send is clicked",
+    name: "autosend",
+    displayName:
+      "Send automatically on every edit (incompatible with URL hash saving below)",
+    default: false,
+    type: "boolean",
+  },
+  {
+    name: "saveloadinhash",
+    displayName:
+      "Save and load content in the URL hash instead of input/output pipes",
     default: false,
     type: "boolean",
   },
@@ -52,23 +46,33 @@ const appOptions: Option[] = [
     type: "option",
     options: ["light", "vs-dark"],
   },
+  {
+    name: "hidemenuififrame",
+    displayName: "Hide menu if in iframe",
+    default: false,
+    type: "boolean",
+  },
 ];
 
 type OptionBlob = {
   mode: string;
-  noautosendonce: boolean;
+  autosend: boolean;
+  hidemenuififrame: boolean;
+  saveloadinhash: boolean;
   theme: string;
 };
 
 export const App: FunctionalComponent = () => {
-  const metaframe: MetaframeObject = useMetaframe();
-  const [name, setName] = useHashParamBase64("name", "");
-  // Proposed way to tell metaframe: I am configuring you
-  // const [metaframeConfigure] = useHashParam("metaframe-configure");
+  const metaframe = useMetaframeAndInput();
+  const [nameHashparam, setNameHashparam] = useHashParamBase64("name", "value");
+  const [name, setName] = useState<string>("value");
+  const initialValue = useRef<string | undefined>();
   const [options] = useHashParamJson<OptionBlob>("options", {
     mode: "json",
-    noautosendonce: false,
     theme: "light",
+    hidemenuififrame: false,
+    saveloadinhash: false,
+    autosend: false,
   });
 
   // Split these next two otherwise editing is too slow as it copies to/from the URL
@@ -77,87 +81,117 @@ export const App: FunctionalComponent = () => {
     undefined
   );
   // Use a local copy because directly using hash params is too slow for typing
-  const [localValue, setLocalValue] = useState<string|undefined>(valueHashParam || "");
-  // Send the text at least once, even if the user doesn't click "Send"
-  const [sendOnce, setSendOnce] = useState<boolean>(false);
+  const [localValue, setLocalValue] = useState<string | undefined>(
+    valueHashParam
+  );
 
-  // source of truth: the URL param #?text=<HashParamBase64>
+  const setValue = useCallback(
+    (value: string | undefined) => {
+      // update the editor definitely
+      setLocalValue(value);
+      // but sending further is logic
+      if (options?.autosend && initialValue.current !== value) {
+        if (metaframe.setOutputs && isIframe() && value) {
+          const newOutputs: any = maybeConvertJsonValues(name, value);
+          metaframe?.metaframe?.setOutputs(newOutputs);
+        }
+      }
+    },
+    [setLocalValue, name, options, initialValue]
+  );
+
+  /**
+   * state management for the text name
+   */
+  // update name in hash param when it changes
+  useEffect(() => {
+    if (options?.saveloadinhash) {
+      setNameHashparam(name);
+    }
+  }, [name, setNameHashparam, options?.saveloadinhash]);
+
+  // update name in hash param when it changes
+  useEffect(() => {
+    if (options?.saveloadinhash && nameHashparam) {
+      setName(nameHashparam);
+    }
+  }, [nameHashparam, setName, options?.saveloadinhash]);
+  // listen to metaframe inputs
+  useEffect(() => {
+    const key = Object.keys(metaframe?.inputs)[0];
+    if (key) {
+      const newValue =
+        typeof metaframe.inputs[key] === "string"
+          ? metaframe.inputs[key]
+          : JSON.stringify(metaframe.inputs[key], null, "  ");
+
+      // This value never changes once set
+      if (initialValue.current === undefined) {
+        initialValue.current = newValue;
+      }
+      setValue(newValue);
+      setName(key);
+    }
+  }, [metaframe.inputs, setValue, setName]);
+  /**
+   * end: state management for the text name
+   */
+
+  // once source of truth: the URL param #?text=<HashParamBase64>
   // if that changes, set the local value
   // the local value changes fast from editing
   useEffect(() => {
-    setLocalValue(valueHashParam || "");
-  }, [valueHashParam, setLocalValue]);
-
-  // make sure the file name is up-to-date
-  // either from #?name=<HashParamBase64> or from the latest input name
-  useEffect(() => {
-    const key = Object.keys(metaframe.inputs)[0];
-    if (key) {
-      if (typeof metaframe.inputs[key] === "string") {
-        setValueHashParam(metaframe.inputs[key]);
-      } else {
-        setValueHashParam(JSON.stringify(metaframe.inputs[key], null, "  "));
-      }
-      setName(key);
+    // This value never changes once set
+    if (valueHashParam === undefined) {
+      return;
     }
-  }, [metaframe.inputs, setValueHashParam, setName]);
+
+    if (initialValue.current === undefined) {
+      initialValue.current = valueHashParam;
+    }
+    if (options?.saveloadinhash) {
+      setLocalValue(valueHashParam || "");
+    }
+  }, [valueHashParam, setLocalValue, options?.saveloadinhash]);
 
   const onSave = useCallback(() => {
-    setValueHashParam(localValue);
-    if (metaframe.setOutputs && name && name.length > 0 && isIframe() && localValue) {
+    if (options?.saveloadinhash) {
+      setValueHashParam(localValue);
+    }
+    if (metaframe.setOutputs && isIframe() && localValue) {
       const newOutputs: any = maybeConvertJsonValues(name, localValue);
       metaframe.setOutputs(newOutputs);
     }
-  }, [metaframe.setOutputs, localValue, name, setValueHashParam]);
-
-  // send current script at least once
-  useEffect(() => {
-    // don't autosend metapage definitions ugh you get an ugly loop.
-    // configurating it specially is cumbersome
-    if (
-      name !== "metapage/definition" &&
-      !options?.noautosendonce &&
-      metaframe.setOutputs &&
-      localValue &&
-      localValue.length > 0 &&
-      name &&
-      name.length > 0 &&
-      !sendOnce &&
-      isIframe()
-    ) {
-      const newOutputs: any = maybeConvertJsonValues(name, localValue);
-      metaframe.setOutputs(newOutputs);
-      setSendOnce(true);
-    }
-  }, [metaframe.setOutputs, localValue, name, sendOnce, setSendOnce, options]);
+  }, [
+    metaframe.setOutputs,
+    localValue,
+    setValueHashParam,
+    options?.saveloadinhash,
+    name,
+  ]);
 
   return (
     <Box w="100%" p={2}>
       <VStack spacing={2} align="stretch">
-        <Flex alignItems="center">
-          <HStack>
-            <EditableText
-              value={name ? name : ""}
-              setValue={setName}
-              defaultValue="Name"
-            />
+        {options?.hidemenuififrame && isIframe() ? null : (
+          <Flex alignItems="center">
+            <HStack>
+              <OptionsMenuButton options={appOptions} />
+              <ButtonHelp />
+            </HStack>
 
-            <OptionsMenuButton options={appOptions} />
-            <ButtonHelp />
-          </HStack>
+            <Spacer />
 
-          <Spacer />
-
-          <Button colorScheme="blue" onClick={onSave}>
-            Save
-          </Button>
-
-        </Flex>
+            <Button colorScheme="blue" onClick={onSave}>
+              Save
+            </Button>
+          </Flex>
+        )}
 
         <Editor
           mode={options?.mode || "json"}
           theme={options?.theme || "light"}
-          setValue={setLocalValue}
+          setValue={setValue}
           value={localValue}
         />
       </VStack>
