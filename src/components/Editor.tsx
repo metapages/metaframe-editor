@@ -19,7 +19,7 @@ export const Editor: FunctionalComponent<EditorProps> = ({
       defaultLanguage={mode}
       theme={theme}
       options={{
-        minimap: {enabled:false},
+        minimap: { enabled: false },
       }}
       onChange={setValue}
       value={value}

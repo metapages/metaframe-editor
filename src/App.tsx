@@ -13,6 +13,7 @@ import { Box, Button, Flex, HStack, Spacer, VStack } from "@chakra-ui/react";
 import { useMetaframeAndInput } from "@metapages/metaframe-hook";
 import { useHashParamJson, useHashParamBase64 } from "@metapages/hash-query";
 import { isIframe } from "@metapages/metapage";
+import AwesomeDebouncePromise from "awesome-debounce-promise";
 import { Editor } from "./components/Editor";
 import { Option, OptionsMenuButton } from "./components/OptionsMenu";
 import { ButtonHelp } from "./components/ButtonHelp";
@@ -27,15 +28,13 @@ const appOptions: Option[] = [
   },
   {
     name: "autosend",
-    displayName:
-      "Send automatically on every edit (incompatible with URL hash saving below)",
+    displayName: "Send metaframe output automatically on every edit",
     default: false,
     type: "boolean",
   },
   {
     name: "saveloadinhash",
-    displayName:
-      "Save and load content in the URL hash instead of input/output pipes",
+    displayName: "Save and load content in the URL hash",
     default: false,
     type: "boolean",
   },
@@ -66,6 +65,7 @@ export const App: FunctionalComponent = () => {
   const metaframe = useMetaframeAndInput();
   const [nameHashparam, setNameHashparam] = useHashParamBase64("name", "value");
   const [name, setName] = useState<string>("value");
+  const lastValue = useRef<string>("");
   const initialValue = useRef<string | undefined>();
   const [options] = useHashParamJson<OptionBlob>("options", {
     mode: "json",
@@ -80,6 +80,12 @@ export const App: FunctionalComponent = () => {
     "text",
     undefined
   );
+  const setValueHashParamDebounced = useCallback(
+    AwesomeDebouncePromise((value: string) => {
+      setValueHashParam(value);
+    }, 500),
+    [setValueHashParam]
+  );
   // Use a local copy because directly using hash params is too slow for typing
   const [localValue, setLocalValue] = useState<string | undefined>(
     valueHashParam
@@ -87,17 +93,22 @@ export const App: FunctionalComponent = () => {
 
   const setValue = useCallback(
     (value: string | undefined) => {
+      // no non-string values sent
+      if (value === null || value === undefined) {
+        return;
+      }
       // update the editor definitely
       setLocalValue(value);
       // but sending further is logic
-      if (options?.autosend && initialValue.current !== value) {
-        if (metaframe.setOutputs && isIframe() && value) {
-          const newOutputs: any = maybeConvertJsonValues(name, value);
-          metaframe?.metaframe?.setOutputs(newOutputs);
-        }
+      if (options?.autosend && metaframe?.setOutputs) {
+        const newOutputs: any = maybeConvertJsonValues(name, value);
+        metaframe?.metaframe?.setOutputs(newOutputs);
+      }
+      if (options?.saveloadinhash) {
+        setValueHashParamDebounced(value);
       }
     },
-    [setLocalValue, name, options, initialValue]
+    [setLocalValue, name, options, metaframe, setValueHashParamDebounced]
   );
 
   /**
@@ -125,14 +136,15 @@ export const App: FunctionalComponent = () => {
           ? metaframe.inputs[key]
           : JSON.stringify(metaframe.inputs[key], null, "  ");
 
-      // This value never changes once set
-      if (initialValue.current === undefined) {
-        initialValue.current = newValue;
+      // Consumers of the metaframe will likely set the value after
+      // getting an update, so don't update here if it's the same value
+      if (lastValue.current !== newValue) {
+        lastValue.current = newValue;
+        setValue(newValue);
+        setName(key);
       }
-      setValue(newValue);
-      setName(key);
     }
-  }, [metaframe.inputs, setValue, setName]);
+  }, [metaframe.inputs, setValue, setName, lastValue.current]);
   /**
    * end: state management for the text name
    */
@@ -150,22 +162,25 @@ export const App: FunctionalComponent = () => {
       initialValue.current = valueHashParam;
     }
     if (options?.saveloadinhash) {
-      setLocalValue(valueHashParam || "");
+      setLocalValue(valueHashParam);
     }
-  }, [valueHashParam, setLocalValue, options?.saveloadinhash]);
+  }, [valueHashParam, setLocalValue, initialValue, options?.saveloadinhash]);
 
   const onSave = useCallback(() => {
-    if (options?.saveloadinhash) {
-      setValueHashParam(localValue);
+    if (localValue === null || localValue === undefined) {
+      return;
     }
-    if (metaframe.setOutputs && isIframe() && localValue) {
+    if (options?.saveloadinhash) {
+      setValueHashParamDebounced(localValue);
+    }
+    if (metaframe.setOutputs) {
       const newOutputs: any = maybeConvertJsonValues(name, localValue);
       metaframe.setOutputs(newOutputs);
     }
   }, [
     metaframe.setOutputs,
     localValue,
-    setValueHashParam,
+    setValueHashParamDebounced,
     options?.saveloadinhash,
     name,
   ]);
