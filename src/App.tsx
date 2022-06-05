@@ -28,13 +28,13 @@ const appOptions: Option[] = [
   },
   {
     name: "autosend",
-    displayName: "Send metaframe output automatically on every edit",
+    displayName: "Update automatically on every edit",
     default: false,
     type: "boolean",
   },
   {
     name: "saveloadinhash",
-    displayName: "Save and load content in the URL hash",
+    displayName: "Store text in URL hash (instead of metaframe outputs)",
     default: false,
     type: "boolean",
   },
@@ -100,12 +100,14 @@ export const App: FunctionalComponent = () => {
       // update the editor definitely
       setLocalValue(value);
       // but sending further is logic
-      if (options?.autosend && metaframe?.setOutputs) {
-        const newOutputs: any = maybeConvertJsonValues(name, value);
-        metaframe?.metaframe?.setOutputs(newOutputs);
-      }
-      if (options?.saveloadinhash) {
-        setValueHashParamDebounced(value);
+      if (options?.autosend) {
+        if (metaframe?.setOutputs) {
+          const newOutputs: any = maybeConvertJsonValues(name, value);
+          metaframe?.metaframe?.setOutputs(newOutputs);
+        }
+        if (options?.saveloadinhash) {
+          setValueHashParamDebounced(value);
+        }
       }
     },
     [setLocalValue, name, options, metaframe, setValueHashParamDebounced]
