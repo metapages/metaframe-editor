@@ -12,7 +12,7 @@ import { useEffect, useState, useCallback, useRef } from "preact/hooks";
 import { Box, Button, Flex, HStack, Spacer, VStack } from "@chakra-ui/react";
 import { useMetaframeAndInput } from "@metapages/metaframe-hook";
 import { useHashParamJson, useHashParamBase64 } from "@metapages/hash-query";
-import { isIframe } from "@metapages/metapage";
+import { isIframe, MetaframeInputMap } from "@metapages/metapage";
 import AwesomeDebouncePromise from "awesome-debounce-promise";
 import { Editor } from "./components/Editor";
 import { Option, OptionsMenuButton } from "./components/OptionsMenu";
@@ -63,8 +63,6 @@ type OptionBlob = {
 
 export const App: FunctionalComponent = () => {
   const metaframe = useMetaframeAndInput();
-  const [nameHashparam, setNameHashparam] = useHashParamBase64("name", "value");
-  const [name, setName] = useState<string>("value");
   const lastValue = useRef<string>("");
   const initialValue = useRef<string | undefined>();
   const [options] = useHashParamJson<OptionBlob>("options", {
@@ -102,7 +100,17 @@ export const App: FunctionalComponent = () => {
       // but sending further is logic
       if (options?.autosend) {
         if (metaframe?.setOutputs) {
-          const newOutputs: any = maybeConvertJsonValues(name, value);
+          const newOutputs: MetaframeInputMap = { value };
+          if (
+            options?.mode === "json" &&
+            (value.trim().startsWith("{") || value.trim().startsWith("["))
+          ) {
+            try {
+              newOutputs.value = JSON.parse(value || "");
+            } catch (err) {
+              // swallow json parsing errors
+            }
+          }
           metaframe?.metaframe?.setOutputs(newOutputs);
         }
         if (options?.saveloadinhash) {
@@ -110,25 +118,13 @@ export const App: FunctionalComponent = () => {
         }
       }
     },
-    [setLocalValue, name, options, metaframe, setValueHashParamDebounced]
+    [setLocalValue, options, metaframe, setValueHashParamDebounced]
   );
 
   /**
    * state management for the text name
    */
-  // update name in hash param when it changes
-  useEffect(() => {
-    if (options?.saveloadinhash) {
-      setNameHashparam(name);
-    }
-  }, [name, setNameHashparam, options?.saveloadinhash]);
 
-  // update name in hash param when it changes
-  useEffect(() => {
-    if (options?.saveloadinhash && nameHashparam) {
-      setName(nameHashparam);
-    }
-  }, [nameHashparam, setName, options?.saveloadinhash]);
   // listen to metaframe inputs
   useEffect(() => {
     const key = Object.keys(metaframe?.inputs)[0];
@@ -143,10 +139,9 @@ export const App: FunctionalComponent = () => {
       if (lastValue.current !== newValue) {
         lastValue.current = newValue;
         setValue(newValue);
-        setName(key);
       }
     }
-  }, [metaframe.inputs, setValue, setName, lastValue.current]);
+  }, [metaframe.inputs, setValue, lastValue.current]);
   /**
    * end: state management for the text name
    */
@@ -176,7 +171,17 @@ export const App: FunctionalComponent = () => {
       setValueHashParamDebounced(localValue);
     }
     if (metaframe.setOutputs) {
-      const newOutputs: any = maybeConvertJsonValues(name, localValue);
+      const newOutputs: MetaframeInputMap = { value: localValue };
+      if (
+        options?.mode === "json" &&
+        (localValue.trim().startsWith("{") || localValue.trim().startsWith("["))
+      ) {
+        try {
+          newOutputs.value = JSON.parse(localValue || "");
+        } catch (err) {
+          // swallow json parsing errors
+        }
+      }
       metaframe.setOutputs(newOutputs);
     }
   }, [
@@ -184,7 +189,6 @@ export const App: FunctionalComponent = () => {
     localValue,
     setValueHashParamDebounced,
     options?.saveloadinhash,
-    name,
   ]);
 
   return (
@@ -214,18 +218,4 @@ export const App: FunctionalComponent = () => {
       </VStack>
     </Box>
   );
-};
-
-const maybeConvertJsonValues = (name: string, text: string) => {
-  const newOutputs: any = {};
-  if (name.endsWith(".json")) {
-    try {
-      newOutputs[name] = JSON.parse(text || "");
-    } catch (err) {
-      newOutputs[name] = text;
-    }
-  } else {
-    newOutputs[name] = text;
-  }
-  return newOutputs;
 };
