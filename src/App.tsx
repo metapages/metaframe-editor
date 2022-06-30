@@ -2,9 +2,8 @@
  * Simple:
  *  - any input sets
  *    - the content to the editor
- *    - the name to the input name
  *    - the save button is deactivated
- *  The save button sends the editor content to the same input name
+ *  The save button sends the editor content to the same input pipe "value"
  */
 
 import { FunctionalComponent } from "preact";
@@ -122,17 +121,16 @@ export const App: FunctionalComponent = () => {
   );
 
   /**
-   * state management for the text name
+   * state management for the text
    */
 
   // listen to metaframe inputs
   useEffect(() => {
-    const key = Object.keys(metaframe?.inputs)[0];
-    if (key) {
+    if (metaframe?.inputs?.["value"]) {
       const newValue =
-        typeof metaframe.inputs[key] === "string"
-          ? metaframe.inputs[key]
-          : JSON.stringify(metaframe.inputs[key], null, "  ");
+        typeof metaframe.inputs["value"] === "string"
+          ? metaframe.inputs["value"]
+          : JSON.stringify(metaframe.inputs["value"], null, "  ");
 
       // Consumers of the metaframe will likely set the value after
       // getting an update, so don't update here if it's the same value
@@ -143,7 +141,7 @@ export const App: FunctionalComponent = () => {
     }
   }, [metaframe.inputs, setValue, lastValue.current]);
   /**
-   * end: state management for the text name
+   * end: state management for the text
    */
 
   // once source of truth: the URL param #?text=<HashParamBase64>
