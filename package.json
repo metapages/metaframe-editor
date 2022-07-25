@@ -21,7 +21,7 @@
     "@chakra-ui/react": "^1.6.5",
     "@emotion/react": "^11.4.0",
     "@emotion/styled": "^11.3.0",
-    "@metapages/hash-query": "^0.3.9",
+    "@metapages/hash-query": "^0.3.10",
     "@metapages/metaframe-hook": "^1.0.8",
     "@metapages/metapage": "^0.8.7",
     "@monaco-editor/react": "^4.2.2",
