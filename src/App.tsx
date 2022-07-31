@@ -14,7 +14,7 @@ import { useHashParamJson, useHashParamBase64 } from "@metapages/hash-query";
 import { isIframe, MetaframeInputMap } from "@metapages/metapage";
 import AwesomeDebouncePromise from "awesome-debounce-promise";
 import { Editor } from "./components/Editor";
-import { Option, OptionsMenuButton } from "./components/OptionsMenu";
+import { Option, ButtonOptionsMenu } from "./components/ButtonOptionsMenu";
 import { ButtonHelp } from "./components/ButtonHelp";
 
 const appOptions: Option[] = [
@@ -33,8 +33,8 @@ const appOptions: Option[] = [
   },
   {
     name: "saveloadinhash",
-    displayName: "Store text in URL hash (instead of metaframe outputs)",
-    default: false,
+    displayName: "Persist text in URL hash",
+    default: true,
     type: "boolean",
   },
   {
@@ -144,6 +144,27 @@ export const App: FunctionalComponent = () => {
    * end: state management for the text
    */
 
+  const sendOutputs = useCallback(
+    (value: string | null) => {
+      if (metaframe?.setOutputs) {
+        const newOutputs: MetaframeInputMap = { value };
+        if (
+          value &&
+          options?.mode === "json" &&
+          (value.trim().startsWith("{") || value.trim().startsWith("["))
+        ) {
+          try {
+            newOutputs.value = JSON.parse(value || "");
+          } catch (err) {
+            // swallow json parsing errors
+          }
+        }
+        metaframe.setOutputs(newOutputs);
+      }
+    },
+    [metaframe]
+  );
+
   // once source of truth: the URL param #?text=<HashParamBase64>
   // if that changes, set the local value
   // the local value changes fast from editing
@@ -159,7 +180,14 @@ export const App: FunctionalComponent = () => {
     if (options?.saveloadinhash) {
       setLocalValue(valueHashParam);
     }
-  }, [valueHashParam, setLocalValue, initialValue, options?.saveloadinhash]);
+    sendOutputs(valueHashParam);
+  }, [
+    valueHashParam,
+    setLocalValue,
+    initialValue,
+    options?.saveloadinhash,
+    sendOutputs,
+  ]);
 
   const onSave = useCallback(() => {
     if (localValue === null || localValue === undefined) {
@@ -167,26 +195,17 @@ export const App: FunctionalComponent = () => {
     }
     if (options?.saveloadinhash) {
       setValueHashParamDebounced(localValue);
-    }
-    if (metaframe.setOutputs) {
-      const newOutputs: MetaframeInputMap = { value: localValue };
-      if (
-        options?.mode === "json" &&
-        (localValue.trim().startsWith("{") || localValue.trim().startsWith("["))
-      ) {
-        try {
-          newOutputs.value = JSON.parse(localValue || "");
-        } catch (err) {
-          // swallow json parsing errors
-        }
-      }
-      metaframe.setOutputs(newOutputs);
+    } else {
+      // Updating the value in the hash param triggers a sendOutputs
+      // call so only do this here if we are NOT updating via setValueHashParam
+      sendOutputs(localValue);
     }
   }, [
     metaframe.setOutputs,
     localValue,
     setValueHashParamDebounced,
     options?.saveloadinhash,
+    sendOutputs,
   ]);
 
   return (
@@ -195,7 +214,7 @@ export const App: FunctionalComponent = () => {
         {options?.hidemenuififrame && isIframe() ? null : (
           <Flex alignItems="center">
             <HStack>
-              <OptionsMenuButton options={appOptions} />
+              <ButtonOptionsMenu options={appOptions} />
               <ButtonHelp />
             </HStack>
 

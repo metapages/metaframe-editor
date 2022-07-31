@@ -9,7 +9,7 @@ NPM_PUBLISH                        := "true"
 # The root domain for this app, serving index.html
 export APP_FQDN                    := env_var_or_default("APP_FQDN", "metaframe1.dev")
 export APP_PORT                    := env_var_or_default("APP_PORT", "443")
-ROOT                               := env_var_or_default("GITHUB_WORKSPACE", `git rev-parse --show-toplevel`)
+ROOT                               := env_var_or_default("GITHUB_WORKSPACE", `(which git >/dev/null && git rev-parse --show-toplevel) || pwd`)
 export CI                          := env_var_or_default("CI", "")
 PACKAGE_NAME_SHORT                 := file_name(`cat package.json | jq -r '.name' | sd '.*/' ''`)
 # Store the CI/dev docker image in github
@@ -273,7 +273,18 @@ _githubpages_publish: _ensureGitPorcelain
             -e DOCKER_IMAGE_PREFIX={{DOCKER_IMAGE_PREFIX}} \
             -e HISTFILE=$WORKSPACE/.tmp/.bash_history \
             -e WORKSPACE=$WORKSPACE \
-            -v {{ROOT}}:$WORKSPACE \
+            -v {{ROOT}}/.certs:$WORKSPACE/.certs \
+            -v {{ROOT}}/dist:$WORKSPACE/dist \
+            -v {{ROOT}}/public:$WORKSPACE/public \
+            -v {{ROOT}}/src:$WORKSPACE/src \
+            -v {{ROOT}}/.env:$WORKSPACE/.env \
+            -v {{ROOT}}/index.html:$WORKSPACE/index.html \
+            -v {{ROOT}}/justfile:$WORKSPACE/justfile \
+            -v {{ROOT}}/package.json:$WORKSPACE/package.json \
+            -v {{ROOT}}/package-lock.json:$WORKSPACE/package-lock.json \
+            -v {{ROOT}}/tsconfig.json:$WORKSPACE/tsconfig.json \
+            -v {{ROOT}}/vite.config.ts:$WORKSPACE/vite.config.ts \
+            -v {{ROOT}}/.git:$WORKSPACE/.git \
             $(if [ -d $HOME/.gitconfig ]; then echo "-v $HOME/.gitconfig:/root/.gitconfig"; else echo ""; fi) \
             $(if [ -d $HOME/.ssh ]; then echo "-v $HOME/.ssh:/root/.ssh"; else echo ""; fi) \
             -p {{APP_PORT}}:{{APP_PORT}} \

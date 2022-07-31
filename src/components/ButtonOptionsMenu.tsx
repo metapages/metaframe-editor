@@ -173,7 +173,7 @@ const OptionsMenu: FunctionalComponent<{
       <DrawerOverlay>
         <DrawerContent>
           <DrawerHeader borderBottomWidth="0px">
-            Configure metaframe (stored in URL hash params )
+            Configure:
           </DrawerHeader>
           <DrawerBody>
             <Box
