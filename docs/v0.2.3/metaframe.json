@@ -1,0 +1,12 @@
+{
+	"version": "0.3",
+	"metadata": {
+		"title": "Edit"
+	},
+	"inputs": {
+		"metapage/definition": {}
+	},
+    "outputs": {
+		"metapage/definition": {}
+	}
+}
