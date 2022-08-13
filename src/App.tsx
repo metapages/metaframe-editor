@@ -62,6 +62,7 @@ type OptionBlob = {
 
 export const App: FunctionalComponent = () => {
   const metaframe = useMetaframeAndInput();
+  const valueName = useRef<string>("value");
   const lastValue = useRef<string>("");
   const initialValue = useRef<string | undefined>();
   const [options] = useHashParamJson<OptionBlob>("options", {
@@ -126,11 +127,19 @@ export const App: FunctionalComponent = () => {
 
   // listen to metaframe inputs
   useEffect(() => {
-    if (metaframe?.inputs?.["value"]) {
+    if (!metaframe?.inputs) {
+      return;
+    }
+    const inputKeys = Object.keys(metaframe.inputs);
+    if (inputKeys.length === 0) {
+      return;
+    }
+    valueName.current = inputKeys[0];
+    if (metaframe.inputs[valueName.current]) {
       const newValue =
-        typeof metaframe.inputs["value"] === "string"
-          ? metaframe.inputs["value"]
-          : JSON.stringify(metaframe.inputs["value"], null, "  ");
+        typeof metaframe.inputs[valueName.current] === "string"
+          ? metaframe.inputs[valueName.current]
+          : JSON.stringify(metaframe.inputs[valueName.current], null, "  ");
 
       // Consumers of the metaframe will likely set the value after
       // getting an update, so don't update here if it's the same value
@@ -139,7 +148,7 @@ export const App: FunctionalComponent = () => {
         setValue(newValue);
       }
     }
-  }, [metaframe.inputs, setValue, lastValue.current]);
+  }, [metaframe.inputs, setValue, lastValue.current, valueName]);
   /**
    * end: state management for the text
    */
@@ -147,14 +156,15 @@ export const App: FunctionalComponent = () => {
   const sendOutputs = useCallback(
     (value: string | null) => {
       if (metaframe?.setOutputs) {
-        const newOutputs: MetaframeInputMap = { value };
+        const newOutputs: MetaframeInputMap = { };
+        newOutputs[valueName.current] = value;
         if (
           value &&
           options?.mode === "json" &&
           (value.trim().startsWith("{") || value.trim().startsWith("["))
         ) {
           try {
-            newOutputs.value = JSON.parse(value || "");
+            newOutputs[valueName.current] = JSON.parse(value || "");
           } catch (err) {
             // swallow json parsing errors
           }
@@ -162,7 +172,7 @@ export const App: FunctionalComponent = () => {
         metaframe.setOutputs(newOutputs);
       }
     },
-    [metaframe]
+    [metaframe, valueName]
   );
 
   // once source of truth: the URL param #?text=<HashParamBase64>
