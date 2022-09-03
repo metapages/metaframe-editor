@@ -156,7 +156,7 @@ export const App: FunctionalComponent = () => {
   const sendOutputs = useCallback(
     (value: string | null) => {
       if (metaframe?.setOutputs) {
-        const newOutputs: MetaframeInputMap = { };
+        const newOutputs: MetaframeInputMap = {};
         newOutputs[valueName.current] = value;
         if (
           value &&
@@ -221,20 +221,24 @@ export const App: FunctionalComponent = () => {
   return (
     <Box w="100%" p={2}>
       <VStack spacing={2} align="stretch">
-        {options?.hidemenuififrame && isIframe() ? null : (
-          <Flex alignItems="center">
+        <Flex alignItems="center">
+          {options?.hidemenuififrame && isIframe() ? null : (
             <HStack>
               <ButtonOptionsMenu options={appOptions} />
               <ButtonHelp />
             </HStack>
+          )}
 
-            <Spacer />
+          <Spacer />
 
+          {options?.hidemenuififrame &&
+          isIframe() &&
+          options?.autosend ? null : (
             <Button colorScheme="blue" onClick={onSave}>
               Save
             </Button>
-          </Flex>
-        )}
+          )}
+        </Flex>
 
         <Editor
           mode={options?.mode || "json"}
