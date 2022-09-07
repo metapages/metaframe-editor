@@ -4,9 +4,11 @@
 		"title": "Edit"
 	},
 	"inputs": {
-		"metapage/definition": {}
+		"metapage/definition": {},
+		"text": {}
 	},
     "outputs": {
-		"metapage/definition": {}
+		"metapage/definition": {},
+		"text": {}
 	}
 }
