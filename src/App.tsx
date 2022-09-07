@@ -3,7 +3,7 @@
  *  - any input sets
  *    - the content to the editor
  *    - the save button is deactivated
- *  The save button sends the editor content to the same input pipe "value"
+ *  The save button sends the editor content to the same input pipe "text"
  */
 
 import { FunctionalComponent } from "preact";
@@ -62,7 +62,7 @@ type OptionBlob = {
 
 export const App: FunctionalComponent = () => {
   const metaframe = useMetaframeAndInput();
-  const valueName = useRef<string>("value");
+  const valueName = useRef<string>("text");
   const lastValue = useRef<string>("");
   const initialValue = useRef<string | undefined>();
   const [options] = useHashParamJson<OptionBlob>("options", {
