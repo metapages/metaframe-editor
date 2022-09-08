@@ -19,7 +19,7 @@ export DOCKER_TAG                  := `if [ "${GITHUB_ACTIONS}" = "true" ]; then
 # The NPM_TOKEN is required for publishing to https://www.npmjs.com
 NPM_TOKEN                          := env_var_or_default("NPM_TOKEN", "")
 # Source of deno scripts. When developing we need to switch this
-DENO_SOURCE                        := env_var_or_default("DENO_SOURCE", "https://deno.land/x/metapages@v0.0.10")
+DENO_SOURCE                        := env_var_or_default("DENO_SOURCE", "https://deno.land/x/metapages@v0.0.11")
 vite                               := "VITE_APP_FQDN=" + APP_FQDN + " VITE_APP_PORT=" + APP_PORT + " NODE_OPTIONS='--max_old_space_size=16384' ./node_modules/vite/bin/vite.js"
 tsc                                := "./node_modules/typescript/bin/tsc"
 # minimal formatting, bold is very useful
@@ -180,11 +180,11 @@ _npm_publish: _require_NPM_TOKEN _npm_build
     npm publish --access public .
 
 # build production brower assets
-_browser_assets_build BUILD_SUB_DIR="": _ensure_npm_modules
-    mkdir -p docs/{{BUILD_SUB_DIR}}
-    find docs/{{BUILD_SUB_DIR}} -maxdepth 1 -type f -exec rm "{}" \;
-    rm -rf docs/{{BUILD_SUB_DIR}}/assets
-    BUILD_SUB_DIR={{BUILD_SUB_DIR}} {{vite}} build --mode=production
+# _browser_assets_build BUILD_SUB_DIR="": _ensure_npm_modules
+#     mkdir -p docs/{{BUILD_SUB_DIR}}
+#     find docs/{{BUILD_SUB_DIR}} -maxdepth 1 -type f -exec rm "{}" \;
+#     rm -rf docs/{{BUILD_SUB_DIR}}/assets
+#     BUILD_SUB_DIR={{BUILD_SUB_DIR}} {{vite}} build --mode=production
 
 # compile typescript src, may or may not emit artifacts
 _tsc +args="": _ensure_npm_modules
