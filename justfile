@@ -180,11 +180,11 @@ _npm_publish: _require_NPM_TOKEN _npm_build
     npm publish --access public .
 
 # build production brower assets
-_browser_assets_build BUILD_SUB_DIR="": _ensure_npm_modules
-    mkdir -p docs/{{BUILD_SUB_DIR}}
-    find docs/{{BUILD_SUB_DIR}} -maxdepth 1 -type f -exec rm "{}" \;
-    rm -rf docs/{{BUILD_SUB_DIR}}/assets
-    BUILD_SUB_DIR={{BUILD_SUB_DIR}} {{vite}} build --mode=production
+# _browser_assets_build BUILD_SUB_DIR="": _ensure_npm_modules
+#     mkdir -p docs/{{BUILD_SUB_DIR}}
+#     find docs/{{BUILD_SUB_DIR}} -maxdepth 1 -type f -exec rm "{}" \;
+#     rm -rf docs/{{BUILD_SUB_DIR}}/assets
+#     BUILD_SUB_DIR={{BUILD_SUB_DIR}} {{vite}} build --mode=production
 
 # compile typescript src, may or may not emit artifacts
 _tsc +args="": _ensure_npm_modules
