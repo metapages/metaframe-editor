@@ -1,252 +1,133 @@
-/**
- * Simple:
- *  - any input sets
- *    - the content to the editor
- *    - the save button is deactivated
- *  The save button sends the editor content to the same input pipe "text"
- */
+import '/@/app.css';
 
-import { FunctionalComponent } from "preact";
-import { useEffect, useState, useCallback, useRef } from "preact/hooks";
-import { Box, Button, Flex, HStack, Spacer, VStack } from "@chakra-ui/react";
-import { useMetaframeAndInput } from "@metapages/metaframe-hook";
-import { useHashParamJson, useHashParamBase64 } from "@metapages/hash-query";
-import { isIframe, MetaframeInputMap } from "@metapages/metapage";
-import AwesomeDebouncePromise from "awesome-debounce-promise";
-import { Editor } from "./components/Editor";
-import { Option, ButtonOptionsMenu } from "./components/ButtonOptionsMenu";
-import { ButtonHelp } from "./components/ButtonHelp";
+import { useState } from 'react';
 
-const appOptions: Option[] = [
-  {
-    name: "mode",
-    displayName: "Editor code mode",
-    default: "json",
-    type: "option",
-    options: ["json", "javascript", "python", "sh"],
-  },
-  {
-    name: "autosend",
-    displayName: "Update automatically on every edit",
-    default: false,
-    type: "boolean",
-  },
-  {
-    name: "saveloadinhash",
-    displayName: "Persist text in URL hash",
-    default: true,
-    type: "boolean",
-  },
-  {
-    name: "theme",
-    displayName: "Light/Dark theme",
-    default: "light",
-    type: "option",
-    options: ["light", "vs-dark"],
-  },
-  {
-    name: "hidemenuififrame",
-    displayName: "Hide menu if in iframe",
-    default: false,
-    type: "boolean",
-  },
-];
+import { PanelMain } from '/@/components/editor/PanelMain';
+import { PanelHelp } from '/@/components/help/PanelHelp';
+import { FiSettings } from 'react-icons/fi';
 
-type OptionBlob = {
-  mode: string;
-  autosend: boolean;
-  hidemenuififrame: boolean;
-  saveloadinhash: boolean;
-  theme: string;
-};
+import {
+  CopyIcon,
+  EditIcon,
+  InfoIcon,
+} from '@chakra-ui/icons';
+import {
+  Box,
+  HStack,
+  IconButton,
+  Show,
+  Spacer,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Tooltip,
+  useToast,
+  VStack,
+} from '@chakra-ui/react';
+import {
+  isIframe,
+  useHashParam,
+} from '@metapages/hash-query';
 
-export const App: FunctionalComponent = () => {
-  const metaframe = useMetaframeAndInput();
-  const valueName = useRef<string>("text");
-  const lastValue = useRef<string>("");
-  const initialValue = useRef<string | undefined>();
-  const [options] = useHashParamJson<OptionBlob>("options", {
-    mode: "json",
-    theme: "light",
-    hidemenuififrame: false,
-    saveloadinhash: false,
-    autosend: false,
-  });
+import {
+  ButtonTabsToggle,
+} from './components/options/components/ButtonTabsToggle';
+import { PanelOptions } from './components/options/PanelOptions';
 
-  // Split these next two otherwise editing is too slow as it copies to/from the URL
-  const [valueHashParam, setValueHashParam] = useHashParamBase64(
-    "text",
-    undefined
-  );
-  const setValueHashParamDebounced = useCallback(
-    AwesomeDebouncePromise((value: string) => {
-      setValueHashParam(value);
-    }, 500),
-    [setValueHashParam]
-  );
-  // Use a local copy because directly using hash params is too slow for typing
-  const [localValue, setLocalValue] = useState<string | undefined>(
-    valueHashParam
-  );
+const isFramed = isIframe();
 
-  const setValue = useCallback(
-    (value: string | undefined) => {
-      // no non-string values sent
-      if (value === null || value === undefined) {
-        return;
-      }
-      // update the editor definitely
-      setLocalValue(value);
-      // but sending further is logic
-      if (options?.autosend) {
-        if (metaframe?.setOutputs) {
-          const newOutputs: MetaframeInputMap = { value };
-          if (
-            options?.mode === "json" &&
-            (value.trim().startsWith("{") || value.trim().startsWith("["))
-          ) {
-            try {
-              newOutputs.value = JSON.parse(value || "");
-            } catch (err) {
-              // swallow json parsing errors
-            }
-          }
-          metaframe?.metaframe?.setOutputs(newOutputs);
-        }
-        if (options?.saveloadinhash) {
-          setValueHashParamDebounced(value);
-        }
-      }
-    },
-    [setLocalValue, options, metaframe, setValueHashParamDebounced]
-  );
+export const App: React.FC = () => {
+  const [menuhidden, setMenuHidden] = useState<boolean>(isFramed);
+  const [mode] = useHashParam("hm", undefined);
+  const [tab, setTab] = useState<number>(0);
+  const toast = useToast();
 
-  /**
-   * state management for the text
-   */
-
-  // listen to metaframe inputs
-  useEffect(() => {
-    if (!metaframe?.inputs) {
-      return;
+  if (menuhidden) {
+    if (mode === undefined || mode === "visible" || mode === "invisible") {
+      return (
+        <>
+          <HStack
+            style={{ position: "absolute" }}
+            width="100%"
+            justifyContent="flex-end"
+          >
+            <Spacer />
+            <Show breakpoint="(min-width: 200px)">
+            <ButtonTabsToggle menuhidden={menuhidden} setMenuHidden={setMenuHidden} mode={mode}/>
+            </Show>
+          </HStack>
+          <PanelMain />
+        </>
+      );
+    } else if (mode === "disabled") {
+      return <PanelMain />;
     }
-    const inputKeys = Object.keys(metaframe.inputs);
-    if (inputKeys.length === 0) {
-      return;
-    }
-    valueName.current = inputKeys[0];
-    if (metaframe.inputs[valueName.current]) {
-      const newValue =
-        typeof metaframe.inputs[valueName.current] === "string"
-          ? metaframe.inputs[valueName.current]
-          : JSON.stringify(metaframe.inputs[valueName.current], null, "  ");
-
-      // Consumers of the metaframe will likely set the value after
-      // getting an update, so don't update here if it's the same value
-      if (lastValue.current !== newValue) {
-        lastValue.current = newValue;
-        setValue(newValue);
-      }
-    }
-  }, [metaframe.inputs, setValue, lastValue.current, valueName]);
-  /**
-   * end: state management for the text
-   */
-
-  const sendOutputs = useCallback(
-    (value: string | null) => {
-      if (metaframe?.setOutputs) {
-        const newOutputs: MetaframeInputMap = {};
-        newOutputs[valueName.current] = value;
-        if (
-          value &&
-          options?.mode === "json" &&
-          (value.trim().startsWith("{") || value.trim().startsWith("["))
-        ) {
-          try {
-            newOutputs[valueName.current] = JSON.parse(value || "");
-          } catch (err) {
-            // swallow json parsing errors
-          }
-        }
-        metaframe.setOutputs(newOutputs);
-      }
-    },
-    [metaframe, valueName]
-  );
-
-  // once source of truth: the URL param #?text=<HashParamBase64>
-  // if that changes, set the local value
-  // the local value changes fast from editing
-  useEffect(() => {
-    // This value never changes once set
-    if (valueHashParam === undefined) {
-      return;
-    }
-
-    if (initialValue.current === undefined) {
-      initialValue.current = valueHashParam;
-    }
-    if (options?.saveloadinhash) {
-      setLocalValue(valueHashParam);
-    }
-    sendOutputs(valueHashParam);
-  }, [
-    valueHashParam,
-    setLocalValue,
-    initialValue,
-    options?.saveloadinhash,
-    sendOutputs,
-  ]);
-
-  const onSave = useCallback(() => {
-    if (localValue === null || localValue === undefined) {
-      return;
-    }
-    if (options?.saveloadinhash) {
-      setValueHashParamDebounced(localValue);
-    } else {
-      // Updating the value in the hash param triggers a sendOutputs
-      // call so only do this here if we are NOT updating via setValueHashParam
-      sendOutputs(localValue);
-    }
-  }, [
-    metaframe.setOutputs,
-    localValue,
-    setValueHashParamDebounced,
-    options?.saveloadinhash,
-    sendOutputs,
-  ]);
-
+  }
   return (
-    <Box w="100%" p={2}>
-      <VStack spacing={2} align="stretch">
-        <Flex alignItems="center">
-          {options?.hidemenuififrame && isIframe() ? null : (
-            <HStack>
-              <ButtonOptionsMenu options={appOptions} />
-              <ButtonHelp />
-            </HStack>
-          )}
+    <VStack align="flex-start" w="100%">
+      <Tabs index={tab || 0} isLazy={true} onChange={setTab} w="100%">
+        <TabList>
+          <Tab>
+            <Tooltip label="View editor">
+              <HStack spacing="0px">
+                <EditIcon />
+                <Box>&nbsp; Editor</Box>
+              </HStack>
+            </Tooltip>
+          </Tab>
+          <Tab>
+            <Tooltip label="Customize page">
+              <HStack spacing="0px">
+                <FiSettings />
+                <Box>&nbsp; Options</Box>
+              </HStack>
+            </Tooltip>
+          </Tab>
 
+          <Tab>
+            <Tooltip label="Documentation">
+              <HStack spacing="0px">
+                <InfoIcon />
+                <Box>&nbsp; Help</Box>
+              </HStack>
+            </Tooltip>
+          </Tab>
+          <Tooltip label="Copy URL to clipboard">
+            <IconButton
+              aria-label="copy url"
+              variant="ghost"
+              icon={<CopyIcon />}
+              onClick={() => {
+                window.navigator.clipboard.writeText(window.location.href);
+                toast({
+                  title: "Copied URL to clipboard",
+                  status: "success",
+                  duration: 2000,
+                  isClosable: true,
+                });
+              }}
+            />
+          </Tooltip>
           <Spacer />
+          <ButtonTabsToggle menuhidden={menuhidden} setMenuHidden={setMenuHidden} mode={mode} />
+        </TabList>
 
-          {options?.hidemenuififrame &&
-          isIframe() &&
-          options?.autosend ? null : (
-            <Button colorScheme="blue" onClick={onSave}>
-              Save
-            </Button>
-          )}
-        </Flex>
+        <TabPanels>
+          <TabPanel>
+            <PanelMain />
+          </TabPanel>
 
-        <Editor
-          mode={options?.mode || "json"}
-          theme={options?.theme || "light"}
-          setValue={setValue}
-          value={localValue}
-        />
-      </VStack>
-    </Box>
+          <TabPanel>
+            <PanelOptions />
+          </TabPanel>
+
+          <TabPanel>
+            <PanelHelp />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+    </VStack>
   );
 };

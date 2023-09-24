@@ -1,5 +1,4 @@
-import { FunctionalComponent } from "preact";
-import MonacoEditor from "@monaco-editor/react";
+import MonacoEditor from '@monaco-editor/react';
 
 export type EditorProps = {
   mode: string;
@@ -8,7 +7,7 @@ export type EditorProps = {
   theme: string;
 };
 
-export const Editor: FunctionalComponent<EditorProps> = ({
+export const Editor: React.FC<EditorProps> = ({
   mode,
   value,
   setValue,
