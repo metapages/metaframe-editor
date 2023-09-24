@@ -1,5 +1,5 @@
 
-# Markdown viewer [metaframe](https://docs.metapage.io/)
+# Code/text editor [metaframe](https://docs.metapage.io/)
 
 
 Metaframe (configurable website) for showing editing code or text. It embeds the [monaco code editor](https://microsoft.github.io/monaco-editor/) (core of [VSCode](https://code.visualstudio.com/)), so you can embed code display or full on editing easily and rapidly within metapages or your own websites, without having to install or configure modules.
@@ -24,9 +24,9 @@ This makes the URL
 ## **How to create / edit**
 
 
-<div style="display: flex; justify-content: space-evenly; flex-direction: row; flex-wrap: nowrap; "><div><p>To modify the options, edit them in the webpage, then copy the URL with the copy button </p>
-</div><div><p><img src="./readme-images/image-1.png" alt="Untitled.png" /></p>
-</div><div>
+<div class="row"><div class="row-cell">To modify the options, edit them in the webpage, then copy the URL with the copy button 
+</div><div class="row-cell"><img src="./readme-images/image-1.png" alt="Untitled.png" />
+</div><div class="row-cell">
 <br/></div></div>
 
 
