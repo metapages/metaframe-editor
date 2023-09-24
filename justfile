@@ -8,16 +8,7 @@ set dotenv-load                    := true
 # The root domain for this app, serving index.html
 export APP_FQDN                    := env_var_or_default("APP_FQDN", "metaframe1.localhost")
 export APP_PORT                    := env_var_or_default("APP_PORT", "4430")
-ROOT                               := env_var_or_default("GITHUB_WORKSPACE", `(which git >/dev/null && git rev-parse --show-toplevel) || pwd`)
-export CI                          := env_var_or_default("CI", "")
 PACKAGE_NAME_SHORT                 := file_name(`cat package.json | jq -r '.name' | sed 's/.*\///'`)
-# Store the CI/dev docker image in github
-# ghcr.io packages cannot have more than one "/" after the organization name
-export DOCKER_IMAGE_PREFIX         := "ghcr.io/metapages/" + PACKAGE_NAME_SHORT
-# Always assume our current cloud ops image is versioned to the exact same app images we deploy
-export DOCKER_TAG                  := `if [ "${GITHUB_ACTIONS}" = "true" ]; then echo "${GITHUB_SHA}"; else echo "$(git rev-parse --short=8 HEAD)"; fi`
-# The NPM_TOKEN is required for publishing to https://www.npmjs.com
-NPM_TOKEN                          := env_var_or_default("NPM_TOKEN", "")
 # Source of deno scripts. When developing we need to switch this
 DENO_SOURCE                        := env_var_or_default("DENO_SOURCE", "https://deno.land/x/metapages@v0.0.14")
 # vite needs an extra memory boost
@@ -48,17 +39,13 @@ dev: _mkcert _ensure_npm_modules (_tsc "--build")
     set -euo pipefail
     APP_ORIGIN=https://${APP_FQDN}:${APP_PORT}
     echo "Browser development pointing to: ${APP_ORIGIN}"
-    MAYBE_OPEN_BROWSER=""
-    if [ ! -f /.dockerenv ]; then
-        export MAYBE_OPEN_BROWSER="--open";
-    fi
     npm i
     export HOST={{APP_FQDN}}
     export PORT={{APP_PORT}}
     export CERT_FILE=.certs/{{APP_FQDN}}.pem
     export CERT_KEY_FILE=.certs/{{APP_FQDN}}-key.pem
     export BASE=
-    VITE_APP_ORIGIN=${APP_ORIGIN} {{vite}} --clearScreen false ${MAYBE_OPEN_BROWSER}
+    VITE_APP_ORIGIN=${APP_ORIGIN} {{vite}} --clearScreen false
 
 generate-readme-from-notion:
     NOTION_PAGE_ID="https://www.notion.so/metapages/README-md-editor-mtfm-io-1d0089066a9f4b16a14d0e83bcfdecc7?pvs=4" just ~/dev/git/metapages/cetami.io/api/functions/notion-page-to-markdown {{justfile_directory()}}/public README.md
@@ -129,59 +116,6 @@ _tsc +args="": _ensure_npm_modules
 @_cloudflare_pages_publish: _ensure_npm_modules
     deno run --unstable --allow-all {{DENO_SOURCE}}/browser/gh-pages-publish-to-docs.ts --versioning=true
 
-####################################################################################
-# Ensure docker image for local and CI operations
-# Hoist into a docker container with all require CLI tools installed
-####################################################################################
-# Hoist into a docker container with all require CLI tools installed
-@_docker +args="bash": _build_docker
-    echo -e "🌱 Entering docker context: {{bold}}{{DOCKER_IMAGE_PREFIX}}:{{DOCKER_TAG}} from <repo/>Dockerfile 🚪🚪{{normal}}"
-    mkdir -p {{ROOT}}/.tmp
-    touch {{ROOT}}/.tmp/.bash_history
-    touch {{ROOT}}/.tmp/.aliases
-    if [ -f ~/.aliases ]; then cp ~/.aliases {{ROOT}}/.tmp/.aliases; fi
-    export WORKSPACE=/repo && \
-        docker run \
-            --platform linux/$(docker version -f '{{{{json .}}' | jq -r '.Server.Arch') \
-            --rm \
-            -ti \
-            -e DOCKER_IMAGE_PREFIX=${DOCKER_IMAGE_PREFIX} \
-            -e PS1="<$(basename $PWD)/> " \
-            -e PROMPT="<%/% > " \
-            -e DOCKER_IMAGE_PREFIX={{DOCKER_IMAGE_PREFIX}} \
-            -e HISTFILE=$WORKSPACE/.tmp/.bash_history \
-            -e WORKSPACE=$WORKSPACE \
-            -e DENO_DIR=/root/.cache/deno \
-            -v {{ROOT}}:$WORKSPACE \
-            -v {{PACKAGE_NAME_SHORT}}_node_modules:$WORKSPACE/node_modules \
-            -v {{PACKAGE_NAME_SHORT}}_root_npm:/root/.npm \
-            -v {{PACKAGE_NAME_SHORT}}_deno:/root/.cache/deno \
-            $(if [ -d $HOME/.gitconfig ]; then echo "-v $HOME/.gitconfig:/root/.gitconfig"; else echo ""; fi) \
-            $(if [ -d $HOME/.ssh ]; then echo "-v $HOME/.ssh:/root/.ssh"; else echo ""; fi) \
-            -p {{APP_PORT}}:{{APP_PORT}} \
-            --add-host {{APP_FQDN}}:127.0.0.1 \
-            -w $WORKSPACE \
-            {{DOCKER_IMAGE_PREFIX}}:{{DOCKER_TAG}} {{args}} || true
-
-# If the ./app docker image in not build, then build it
-_build_docker:
-    #!/usr/bin/env bash
-    set -euo pipefail
-
-    if [[ "$(docker images -q {{DOCKER_IMAGE_PREFIX}}:{{DOCKER_TAG}} 2> /dev/null)" == "" ]]; then
-        echo -e "🌱🌱  ➡ {{bold}}Building docker image ...{{normal}} 🚪🚪 ";
-        echo -e "🌱 </> {{bold}}docker build --platform linux/$(docker version -f '{{{{json .}}' | jq -r '.Server.Arch') -t {{DOCKER_IMAGE_PREFIX}}:{{DOCKER_TAG}} . {{normal}}🚪 ";
-        docker build --platform linux/$(docker version -f '{{{{json .}}' | jq -r '.Server.Arch') -t {{DOCKER_IMAGE_PREFIX}}:{{DOCKER_TAG}} . ;
-    fi
-
-_ensure_inside_docker:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    if [ ! -f /.dockerenv ]; then
-        echo -e "🌵🔥🌵🔥🌵🔥🌵 Not inside a docker container. First run the command: 'just' 🌵🔥🌵🔥🌵🔥🌵"
-        exit 1
-    fi
-
 _ensureGitPorcelain:
     #!/usr/bin/env bash
     set -eo pipefail
@@ -200,4 +134,6 @@ _fix_git_actions_permission:
         git config --global --add safe.directory /repo
         git config --global --add safe.directory $(pwd)
         export GIT_CEILING_DIRECTORIES=/__w
+        git config --global user.email "robot@metapage.io"
+        git config --global user.name "Metaframe Robot"
     fi
