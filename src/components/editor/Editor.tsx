@@ -5,6 +5,7 @@ export type EditorProps = {
   value: string | undefined;
   setValue: (value: string | undefined) => void;
   theme: string;
+  readOnly?: boolean;
 };
 
 export const Editor: React.FC<EditorProps> = ({
@@ -12,6 +13,7 @@ export const Editor: React.FC<EditorProps> = ({
   value,
   setValue,
   theme,
+  readOnly,
 }) => {
   return (
     <MonacoEditor
@@ -19,6 +21,7 @@ export const Editor: React.FC<EditorProps> = ({
       theme={theme}
       options={{
         minimap: { enabled: false },
+        readOnly,
       }}
       onChange={setValue}
       value={value}

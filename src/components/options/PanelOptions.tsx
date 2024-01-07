@@ -34,11 +34,11 @@ const OptionDescription: Record<string, string> = {
   autosend: "On=Autoupdate / Off=shows a save button",
   saveloadinhash: "Persist text in URL hash",
   theme: "Light/Dark theme",
+  readOnly: "Readonly",
 };
 
 const validationSchema = yup.object({
-  mode: yup.string().default("json").required(),
-  // .oneOf(["json", "javascript", "python", "sh", "markdown"]),
+  mode: yup.string().notRequired().optional(),
   theme: yup
     .string()
     .notRequired()
@@ -46,6 +46,7 @@ const validationSchema = yup.object({
     .optional(),
   autosend: yup.boolean().notRequired(),
   saveloadinhash: yup.boolean().notRequired(),
+  readOnly: yup.boolean().notRequired(),
 });
 interface FormType extends yup.InferType<typeof validationSchema> {}
 
@@ -55,7 +56,22 @@ export const PanelOptions: React.FC = () => {
 
   const onSubmit = useCallback(
     (values: FormType) => {
-      const newOptions = values as Options;
+      let newOptions: Options | undefined = { ...(values as Options) };
+      if (!newOptions.saveloadinhash) {
+        delete newOptions.saveloadinhash;
+      }
+      if (!newOptions.autosend) {
+        delete newOptions.autosend;
+      }
+      if (!newOptions.readOnly) {
+        delete newOptions.readOnly;
+      }
+      if (newOptions.theme === defaultOptions.theme) {
+        delete newOptions.theme;
+      }
+      if (newOptions.mode === "json") {
+        delete newOptions.mode;
+      }
       setOptions(newOptions);
     },
     [setOptions]
@@ -91,7 +107,7 @@ export const PanelOptions: React.FC = () => {
             }}
             // placeholder="Select axis"
             size="sm"
-            value={formik.values.mode}
+            value={formik.values.mode || defaultOptions.mode}
             variant="outline"
           >
             {languages.map((mode) => (
@@ -111,7 +127,7 @@ export const PanelOptions: React.FC = () => {
               formik.setFieldValue("theme", e);
               formik.handleSubmit();
             }}
-            value={formik.values.theme}
+            value={formik.values.theme || defaultOptions.theme}
           >
             <Stack
               pl="30px"

@@ -115,6 +115,17 @@ export const PanelMain: React.FC = () => {
       }
     }
   }, [metaframe.inputs, setValue, lastValue.current, valueName]);
+
+  useEffect(() => {
+    const inputs = metaframe?.metaframe?.getInputs();
+
+    if (!inputs) {
+      return;
+    }
+    Object.keys(inputs).forEach((key) => {
+      setValue(inputs[key]);
+    });
+  }, [metaframe?.metaframe, setValue]);
   /**
    * end: state management for the text
    */
@@ -190,9 +201,7 @@ export const PanelMain: React.FC = () => {
     <Box w="100%" p={2}>
       <VStack spacing={2} align="stretch">
         <Flex alignItems="center">
-          {
-          
-          options?.autosend ? null : (
+          {options?.autosend || options?.readOnly ? null : (
             <Tooltip
               label={
                 options?.saveloadinhash
@@ -217,6 +226,7 @@ export const PanelMain: React.FC = () => {
           theme={options?.theme || "light"}
           setValue={setValue}
           value={localValue}
+          readOnly={options?.readOnly}
         />
       </VStack>
     </Box>

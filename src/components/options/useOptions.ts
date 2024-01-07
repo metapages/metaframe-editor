@@ -3,10 +3,11 @@ import { useHashParamJson } from '@metapages/hash-query';
 export type Theme = "light" | "vs-dark";
 
 export type Options = {
-  mode: string;
+  mode?: string | undefined;
   autosend?: boolean;
   saveloadinhash?: boolean;
   theme?: Theme | undefined;
+  readOnly?: boolean;
 };
 
 const HashKeyOptions = "options";
