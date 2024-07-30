@@ -3,22 +3,21 @@ import {
   useState,
 } from 'react';
 
-import { languages } from 'monaco-editor';
+import { useMonaco } from '@monaco-editor/react';
 
 export const useSupportedLanguages = (): string[] => {
   const [currentLanguages, setCurrentLanguages] = useState<string[]>([]);
-  // Get the supported
+  const monaco = useMonaco();
+
   useEffect(() => {
-    const newLanguages: string[] = languages
+    const newLanguages: string[] = monaco?.languages
       .getLanguages()
-      .reduce((languageList, blob) => {
-        // console.log('blob', blob);
+      .reduce((languageList: any, blob: any) => {
         languageList.push(blob.id);
-        // blob?.aliases?.forEach((a) => languageList.push(a));
         return languageList;
       }, [] as string[]);
     setCurrentLanguages(newLanguages);
-  }, []);
+  }, [monaco]);
 
   return currentLanguages;
 };

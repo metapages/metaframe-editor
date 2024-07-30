@@ -12,22 +12,23 @@ import { HiOutlineSave } from 'react-icons/hi';
 import {
   Box,
   Button,
-  Flex,
+  HStack,
   Spacer,
+  Text,
   Tooltip,
   VStack,
 } from '@chakra-ui/react';
 import { useHashParamBase64 } from '@metapages/hash-query';
 import { useMetaframeAndInput } from '@metapages/metaframe-hook';
-import { MetaframeInputMap } from '@metapages/metapage';
+import { MetaframeInputMap, Metapage } from '@metapages/metapage';
 
-import { Editor } from './Editor';
+import { MetapageEditor } from './MetapageEditor';
 
-const encodeMarkdown = (md: string) => {
-  var b64 = window.btoa(encodeURIComponent(md));
-  return b64;
-};
 
+const createdByText = (createdData: any): string => {
+  const author : string = createdData.user ? ` by ${createdData.user}` : ''
+  return `Created at ${createdData.createdAt}${author}`
+}
 /**
  * Just an example very basic output of incoming inputs
  *
@@ -38,7 +39,8 @@ export const PanelMain: React.FC = () => {
   const lastValue = useRef<string>("");
   const initialValue = useRef<string | undefined>();
   const [options] = useOptions();
-
+  const [saveStateMessage, setSaveStateMessage] = useState<string>('')
+  const [lastChangedText, setLastChangedText] = useState<string>('')
   // Split these next two otherwise editing is too slow as it copies to/from the URL
   const [valueHashParam, setValueHashParam] = useHashParamBase64(
     "text",
@@ -61,6 +63,13 @@ export const PanelMain: React.FC = () => {
       if (value === null || value === undefined) {
         return;
       }
+      // if there's a change, show a message indicating unsaved modifications
+      if (localValue !== value) {
+        setSaveStateMessage('current version has unsaved changes')
+      } else {
+        setSaveStateMessage('');
+      }
+
       // update the editor definitely
       setLocalValue(value);
       // but sending further is logic
@@ -84,7 +93,7 @@ export const PanelMain: React.FC = () => {
         }
       }
     },
-    [setLocalValue, options, metaframe, setValueHashParamDebounced]
+    [options, metaframe]
   );
 
   /**
@@ -97,9 +106,15 @@ export const PanelMain: React.FC = () => {
       return;
     }
     const inputKeys = Object.keys(metaframe.inputs);
+    
     if (inputKeys.length === 0) {
       return;
     }
+
+    // we initialize this as "text", but if another key is passed it will be used here
+    // metadata that shows the created at and by is passed to this component, and we want
+    // to make sure those values don't end up being written to the editor.
+    // That data is found under inputKeys.createdData
     valueName.current = inputKeys[0];
     if (metaframe.inputs[valueName.current]) {
       const newValue =
@@ -113,19 +128,26 @@ export const PanelMain: React.FC = () => {
         lastValue.current = newValue;
         setValue(newValue);
       }
+
+      if (metaframe.inputs.createdData) {
+        setLastChangedText(createdByText(metaframe.inputs.createdData))
+      }
     }
-  }, [metaframe.inputs, setValue, lastValue.current, valueName]);
+  }, [metaframe.inputs, lastValue.current, valueName]);
 
   useEffect(() => {
-    const inputs = metaframe?.metaframe?.getInputs();
+    // this should set the value only once so it doesn't clobber local state
+    if (!!localValue) return;
 
+    const inputs = metaframe?.metaframe?.getInputs();
     if (!inputs) {
       return;
     }
-    Object.keys(inputs).forEach((key) => {
-      setValue(inputs[key]);
-    });
-  }, [metaframe?.metaframe, setValue]);
+
+    if (inputs[valueName.current]) {
+      setValue(inputs[valueName.current]);
+    }
+  }, [metaframe?.metaframe]);
   /**
    * end: state management for the text
    */
@@ -147,6 +169,7 @@ export const PanelMain: React.FC = () => {
           }
         }
         metaframe.setOutputs(newOutputs);
+        setSaveStateMessage('');
       }
     },
     [metaframe, valueName]
@@ -157,25 +180,20 @@ export const PanelMain: React.FC = () => {
   // the local value changes fast from editing
   useEffect(() => {
     // This value never changes once set
-    // console.log(`valueHashParam (${typeof(valueHashParam)}):`, valueHashParam);
     if (valueHashParam === undefined) {
       return;
     }
-
+    
     if (initialValue.current === undefined) {
       initialValue.current = valueHashParam;
       setLocalValue(valueHashParam);
     }
-    // if (options?.saveloadinhash && valueHashParam) {
-    //   setLocalValue(valueHashParam);
-    // }
+
     sendOutputs(valueHashParam);
   }, [
     valueHashParam,
-    setLocalValue,
     initialValue,
     options?.saveloadinhash,
-    sendOutputs,
   ]);
 
   const onSave = useCallback(() => {
@@ -200,7 +218,7 @@ export const PanelMain: React.FC = () => {
   return (
     <Box w="100%" p={2}>
       <VStack spacing={2} align="stretch">
-        <Flex alignItems="center">
+        <HStack align="end">
           {options?.autosend || options?.readOnly ? null : (
             <Tooltip
               label={
@@ -218,10 +236,12 @@ export const PanelMain: React.FC = () => {
               </Button>
             </Tooltip>
           )}
-        </Flex>
+          <Text fontSize='xs' color="gray.400">{lastChangedText}</Text>
+          <Text fontSize='xs' color="red">{saveStateMessage}</Text>
+        </HStack>
         <Spacer />
 
-        <Editor
+        <MetapageEditor
           mode={options?.mode || "json"}
           theme={options?.theme || "light"}
           setValue={setValue}
