@@ -25,9 +25,15 @@ import { MetaframeInputMap, Metapage } from '@metapages/metapage';
 import { MetapageEditor } from './MetapageEditor';
 
 
-const createdByText = (createdData: any): string => {
-  const author : string = createdData.user ? ` by ${createdData.user}` : ''
-  return `Created at ${createdData.createdAt}${author}`
+const createdByText = (createdData: string): string => {
+  try {
+    const data = JSON.parse(createdData);
+    const author : string = data.user ? ` by ${data.user}` : ''
+    return `Created at ${data.createdAt}${author}`
+  } catch (err) {
+    return ''
+  }
+
 }
 /**
  * Just an example very basic output of incoming inputs
