@@ -22,19 +22,8 @@ import { useHashParamBase64 } from '@metapages/hash-query';
 import { useMetaframeAndInput } from '@metapages/metaframe-hook';
 import { MetaframeInputMap, Metapage } from '@metapages/metapage';
 
-import { MetapageEditor } from './MetapageEditor';
+import { MetaframeEditor } from './MetaframeEditor';
 
-
-const createdByText = (createdData: string): string => {
-  try {
-    const data = JSON.parse(createdData);
-    const author : string = data.user ? ` by ${data.user}` : ''
-    return `Created at ${data.createdAt}${author}`
-  } catch (err) {
-    return ''
-  }
-
-}
 /**
  * Just an example very basic output of incoming inputs
  *
@@ -45,8 +34,7 @@ export const PanelMain: React.FC = () => {
   const lastValue = useRef<string>("");
   const initialValue = useRef<string | undefined>();
   const [options] = useOptions();
-  const [saveStateMessage, setSaveStateMessage] = useState<string>('')
-  const [lastChangedText, setLastChangedText] = useState<string>('')
+
   // Split these next two otherwise editing is too slow as it copies to/from the URL
   const [valueHashParam, setValueHashParam] = useHashParamBase64(
     "text",
@@ -68,12 +56,6 @@ export const PanelMain: React.FC = () => {
       // no non-string values sent
       if (value === null || value === undefined) {
         return;
-      }
-      // if there's a change, show a message indicating unsaved modifications
-      if (localValue !== value) {
-        setSaveStateMessage('current version has unsaved changes')
-      } else {
-        setSaveStateMessage('');
       }
 
       // update the editor definitely
@@ -118,9 +100,6 @@ export const PanelMain: React.FC = () => {
     }
 
     // we initialize this as "text", but if another key is passed it will be used here
-    // metadata that shows the created at and by is passed to this component, and we want
-    // to make sure those values don't end up being written to the editor.
-    // That data is found under inputKeys.createdData
     valueName.current = inputKeys[0];
     if (metaframe.inputs[valueName.current]) {
       const newValue =
@@ -134,10 +113,6 @@ export const PanelMain: React.FC = () => {
         lastValue.current = newValue;
         setValue(newValue);
       }
-
-      if (metaframe.inputs.createdData) {
-        setLastChangedText(createdByText(metaframe.inputs.createdData))
-      }
     }
   }, [metaframe.inputs, lastValue.current, valueName]);
 
@@ -150,9 +125,9 @@ export const PanelMain: React.FC = () => {
       return;
     }
 
-    if (inputs[valueName.current]) {
-      setValue(inputs[valueName.current]);
-    }
+    Object.keys(inputs).forEach((key) => {
+      setValue(inputs[key]);
+    });
   }, [metaframe?.metaframe]);
   /**
    * end: state management for the text
@@ -175,7 +150,6 @@ export const PanelMain: React.FC = () => {
           }
         }
         metaframe.setOutputs(newOutputs);
-        setSaveStateMessage('');
       }
     },
     [metaframe, valueName]
@@ -242,12 +216,10 @@ export const PanelMain: React.FC = () => {
               </Button>
             </Tooltip>
           )}
-          <Text fontSize='xs' color="gray.400">{lastChangedText}</Text>
-          <Text fontSize='xs' color="red">{saveStateMessage}</Text>
         </HStack>
         <Spacer />
 
-        <MetapageEditor
+        <MetaframeEditor
           mode={options?.mode || "json"}
           theme={options?.theme || "light"}
           setValue={setValue}

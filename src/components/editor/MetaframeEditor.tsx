@@ -8,7 +8,7 @@ export type EditorProps = {
   readOnly?: boolean;
 };
 
-export const MetapageEditor: React.FC<EditorProps> = ({
+export const MetaframeEditor: React.FC<EditorProps> = ({
   mode,
   value,
   setValue,
