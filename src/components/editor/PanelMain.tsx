@@ -34,7 +34,7 @@ export const PanelMain: React.FC = () => {
   const lastValue = useRef<string>("");
   const initialValue = useRef<string | undefined>();
   const [options] = useOptions();
-
+  console.log(options);
   // Split these next two otherwise editing is too slow as it copies to/from the URL
   const [valueHashParam, setValueHashParam] = useHashParamBase64(
     "text",
@@ -118,16 +118,15 @@ export const PanelMain: React.FC = () => {
 
   useEffect(() => {
     // this should set the value only once so it doesn't clobber local state
-    if (!!localValue) return;
+    if (!!localValue && options.preserveLocalState) return;
 
     const inputs = metaframe?.metaframe?.getInputs();
     if (!inputs) {
       return;
     }
 
-    Object.keys(inputs).forEach((key) => {
-      setValue(inputs[key]);
-    });
+    setValue(inputs[valueName.current]);
+
   }, [metaframe?.metaframe]);
   /**
    * end: state management for the text
