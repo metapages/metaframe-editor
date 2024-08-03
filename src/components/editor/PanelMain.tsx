@@ -34,7 +34,7 @@ export const PanelMain: React.FC = () => {
   const lastValue = useRef<string>("");
   const initialValue = useRef<string | undefined>();
   const [options] = useOptions();
-  console.log(options);
+
   // Split these next two otherwise editing is too slow as it copies to/from the URL
   const [valueHashParam, setValueHashParam] = useHashParamBase64(
     "text",
