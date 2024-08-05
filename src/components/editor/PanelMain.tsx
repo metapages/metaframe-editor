@@ -118,7 +118,7 @@ export const PanelMain: React.FC = () => {
 
   useEffect(() => {
     // this should set the value only once so it doesn't clobber local state
-    if (!!localValue && options.preserveLocalState) return;
+    if (!!localValue && options.blockLocalEditorStateOverwrites) return;
 
     const inputs = metaframe?.metaframe?.getInputs();
     if (!inputs) {

@@ -35,7 +35,7 @@ const OptionDescription: Record<string, string> = {
   saveloadinhash: "Persist text in URL hash",
   theme: "Light/Dark theme",
   readOnly: "Readonly",
-  preserveLocalState: "Preserve editor's local state"
+  blockLocalEditorStateOverwrites: "Block updates the overwrite the editor's local state"
 };
 
 const validationSchema = yup.object({
@@ -48,7 +48,7 @@ const validationSchema = yup.object({
   autosend: yup.boolean().notRequired(),
   saveloadinhash: yup.boolean().notRequired(),
   readOnly: yup.boolean().notRequired(),
-  preserveLocalState: yup.boolean().notRequired(),
+  blockLocalEditorStateOverwrites: yup.boolean().notRequired(),
 });
 interface FormType extends yup.InferType<typeof validationSchema> {}
 
@@ -68,8 +68,8 @@ export const PanelOptions: React.FC = () => {
       if (!newOptions.readOnly) {
         delete newOptions.readOnly;
       }
-      if (!newOptions.preserveLocalState) {
-        delete newOptions.preserveLocalState;
+      if (!newOptions.blockLocalEditorStateOverwrites) {
+        delete newOptions.blockLocalEditorStateOverwrites;
       }
       if (newOptions.theme === defaultOptions.theme) {
         delete newOptions.theme;
