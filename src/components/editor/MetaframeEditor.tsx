@@ -1,4 +1,4 @@
-import MonacoEditor from '@monaco-editor/react';
+import Editor from '@monaco-editor/react';
 
 export type EditorProps = {
   mode: string;
@@ -8,7 +8,7 @@ export type EditorProps = {
   readOnly?: boolean;
 };
 
-export const Editor: React.FC<EditorProps> = ({
+export const MetaframeEditor: React.FC<EditorProps> = ({
   mode,
   value,
   setValue,
@@ -16,7 +16,7 @@ export const Editor: React.FC<EditorProps> = ({
   readOnly,
 }) => {
   return (
-    <MonacoEditor
+    <Editor
       defaultLanguage={mode}
       theme={theme}
       options={{
@@ -29,4 +29,4 @@ export const Editor: React.FC<EditorProps> = ({
       height="90vh"
     />
   );
-};
+}

@@ -8,6 +8,7 @@ export type Options = {
   saveloadinhash?: boolean;
   theme?: Theme | undefined;
   readOnly?: boolean;
+  blockLocalEditorStateOverwrites?: boolean;
 };
 
 const HashKeyOptions = "options";

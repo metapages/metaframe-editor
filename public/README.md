@@ -112,6 +112,22 @@ const encodedText = encodeText(yourRawText);
 const url = `https://editor.mtfm.io/#?button=invisible&text=${encodedText}&menuhidden=true&options=JTdCJTIyZGlzcGxheW1vZGUlMjIlM0ElMjJkZWZhdWx0JTIyJTdE`
 ```
 
+# Adding options to the code editor link
+
+Currently supported options include:
+* mode - language, defaults to "json"
+* theme: "vs-dark" or "light"
+* autosend: boolean
+* saveloadinhash: boolean
+* readOnly: boolean
+* blockLocalEditorStateOverwrites: boolean (keeps the local state of the editor from being clobbered after instantiation if new content is passed to the input)
+
+Example:
+```typescript
+const yourOptions = {blockLocalEditorStateOverwrites: true, readOnly: true};
+const encodedOptions = encodeText(JSON.stringify(yourOptions));
+const url = `https://editor.mtfm.io/#?options=${yourOptions}`
+```
 
 Just take that `url` and embed as described above, or via embedded as an iframe:
 
