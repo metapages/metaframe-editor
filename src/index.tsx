@@ -1,3 +1,4 @@
+import "@fontsource-variable/jetbrains-mono";
 import { StrictMode } from 'react';
 
 import { theme } from '/@/theme';
