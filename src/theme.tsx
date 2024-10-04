@@ -18,4 +18,8 @@ export const theme = extendTheme({
       },
     }),
   },
+  fonts: {
+    body: `'JetBrains Mono Variable', monospace`,
+    mono: `'JetBrains Mono Variable', monospace`,
+  },
 });
