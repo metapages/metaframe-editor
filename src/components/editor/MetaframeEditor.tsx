@@ -31,7 +31,7 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
   return (
     <Editor
       beforeMount={setEditorTheme}
-      defaultLanguage={mode}
+      language={mode}
       theme={theme}
       options={{
         minimap: { enabled: false },
