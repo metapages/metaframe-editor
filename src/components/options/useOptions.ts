@@ -28,6 +28,6 @@ export const useOptions = (defaultOptions?:Options|undefined): [Options, (o: Opt
         }
       }
     }
-  }, [options.mode, languages])
+  }, [options?.mode, languages])
   return [options, setOptions];
 };
