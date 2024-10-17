@@ -14,13 +14,12 @@ import {
   Button,
   HStack,
   Spacer,
-  Text,
   Tooltip,
   VStack,
 } from '@chakra-ui/react';
 import { useHashParamBase64 } from '@metapages/hash-query';
 import { useMetaframeAndInput } from '@metapages/metaframe-hook';
-import { MetaframeInputMap, Metapage } from '@metapages/metapage';
+import { MetaframeInputMap } from '@metapages/metapage';
 
 import { MetaframeEditor } from './MetaframeEditor';
 
@@ -49,6 +48,28 @@ export const PanelMain: React.FC = () => {
   // Use a local copy because directly using hash params is too slow for typing
   const [localValue, setLocalValue] = useState<string | undefined>(
     valueHashParam
+  );
+
+  const sendOutputs = useCallback(
+    (value: string | null) => {
+      if (metaframe?.setOutputs) {
+        const newOutputs: MetaframeInputMap = {};
+        newOutputs[valueName.current] = value;
+        if (
+          value &&
+          options?.mode === "json" &&
+          (value.trim().startsWith("{") || value.trim().startsWith("["))
+        ) {
+          try {
+            newOutputs[valueName.current] = JSON.parse(value || "");
+          } catch (err) {
+            // swallow json parsing errors
+          }
+        }
+        metaframe.setOutputs(newOutputs);
+      }
+    },
+    [metaframe, valueName]
   );
 
   const setValue = useCallback(
@@ -132,27 +153,7 @@ export const PanelMain: React.FC = () => {
    * end: state management for the text
    */
 
-  const sendOutputs = useCallback(
-    (value: string | null) => {
-      if (metaframe?.setOutputs) {
-        const newOutputs: MetaframeInputMap = {};
-        newOutputs[valueName.current] = value;
-        if (
-          value &&
-          options?.mode === "json" &&
-          (value.trim().startsWith("{") || value.trim().startsWith("["))
-        ) {
-          try {
-            newOutputs[valueName.current] = JSON.parse(value || "");
-          } catch (err) {
-            // swallow json parsing errors
-          }
-        }
-        metaframe.setOutputs(newOutputs);
-      }
-    },
-    [metaframe, valueName]
-  );
+  
 
   // once source of truth: the URL param #?text=<HashParamBase64>
   // if that changes, set the local value
@@ -170,6 +171,7 @@ export const PanelMain: React.FC = () => {
 
     sendOutputs(valueHashParam);
   }, [
+    sendOutputs,
     valueHashParam,
     initialValue,
     options?.saveloadinhash,
