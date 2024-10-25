@@ -28,6 +28,8 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
     monaco.theme = theme
   }
 
+  // TODO: pull content height from mf chakra theme so we
+  // don't have to use 3rem as a magic number
   return (
     <Editor
       beforeMount={setEditorTheme}
@@ -40,7 +42,7 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
       onChange={setValue}
       value={value}
       width="100%"
-      height="90vh"
+      height="calc(100vh - 3rem)"
     />
   );
 }

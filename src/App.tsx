@@ -115,7 +115,7 @@ export const App: React.FC = () => {
         </TabList>
 
         <TabPanels>
-          <TabPanel>
+          <TabPanel p={0}>
             <PanelMain />
           </TabPanel>
 
