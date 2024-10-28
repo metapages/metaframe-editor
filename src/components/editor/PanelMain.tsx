@@ -197,27 +197,27 @@ export const PanelMain: React.FC = () => {
   ]);
 
   return (
-    <Box w="100%" p={2}>
-      <VStack spacing={2} align="stretch">
-        <HStack align="end">
-          {options?.autosend || options?.readOnly ? null : (
-            <Tooltip
-              label={
-                options?.saveloadinhash
-                  ? "Save in URL hash"
-                  : "Send to connected metaframes"
-              }
-            >
-              <Button
-                onClick={onSave}
-                variant="outline"
-                leftIcon={<HiOutlineSave />}
+    <Box w="100%">
+      <VStack spacing={0} align="stretch">
+        {options?.autosend || options?.readOnly ? null : (
+          <HStack align="end" p={2}>
+              <Tooltip
+                label={
+                  options?.saveloadinhash
+                    ? "Save in URL hash"
+                    : "Send to connected metaframes"
+                }
               >
-                Save
-              </Button>
-            </Tooltip>
-          )}
-        </HStack>
+                <Button
+                  onClick={onSave}
+                  variant="outline"
+                  leftIcon={<HiOutlineSave />}
+                >
+                  Save
+                </Button>
+              </Tooltip>
+          </HStack>
+        )}
         <Spacer />
 
         <MetaframeEditor
