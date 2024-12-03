@@ -45,29 +45,32 @@ export const App: React.FC = () => {
   const toast = useToast();
 
   if (menuhidden) {
+    // console.log("mode", mode);
     if (mode === undefined || mode === "visible" || mode === "invisible") {
+
       return (
         <>
           <HStack
             style={{ position: "absolute" }}
             width="100%"
+            h="100%"
             justifyContent="flex-end"
           >
             <Spacer />
             <Show breakpoint="(min-width: 200px)">
-            <ButtonTabsToggle menuhidden={menuhidden} setMenuHidden={setMenuHidden} mode={mode}/>
+              <ButtonTabsToggle menuhidden={menuhidden} setMenuHidden={setMenuHidden} mode={mode}/>
             </Show>
           </HStack>
           <PanelMain />
         </>
       );
     } else if (mode === "disabled") {
-      return <PanelMain />;
+      return <PanelMain height="100vh" />;
     }
   }
   return (
-    <VStack align="flex-start" w="100%">
-      <Tabs index={tab || 0} isLazy={true} onChange={setTab} w="100%">
+    <VStack align="flex-start" w="100%" h="100%">
+      <Tabs index={tab || 0} isLazy={true} onChange={setTab} w="100%" h="100%">
         <TabList>
           <Tab>
             <Tooltip label="View editor">

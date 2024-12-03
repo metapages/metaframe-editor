@@ -4,8 +4,9 @@ import {
 } from 'react';
 
 import { Box } from '@chakra-ui/react';
+import { SupportedLanguages } from '../editor/MetaframeEditor';
 
-import { useSupportedLanguages } from '../editor/useSupportedLanguages';
+// import { useSupportedLanguages } from '../editor/useSupportedLanguages';
 
 // Not used yet, but here as a reference
 const encodeMarkdown = (md: string) => {
@@ -14,7 +15,7 @@ const encodeMarkdown = (md: string) => {
 };
 
 export const PanelHelp: React.FC = () => {
-  const languages = useSupportedLanguages();
+  // const languages = useSupportedLanguages();
   const [downloadedMarkdown, setDownloadedMarkdown] = useState<
     string | undefined
   >();
@@ -33,15 +34,15 @@ export const PanelHelp: React.FC = () => {
 
   // Append the list of supported languages at the end of the README.md
   useEffect(() => {
-    if (languages && downloadedMarkdown) {
+    if (SupportedLanguages.languages && downloadedMarkdown) {
       const updatedMarkdown =
         downloadedMarkdown +
         "\n\n### Supported Languages\n\n" +
-        languages.map((l) => `  - \`${l}\``).join("\n");
+        SupportedLanguages.languages.map((l) => `  - \`${l}\``).join("\n");
       const encodedMarkdown = encodeMarkdown(updatedMarkdown);
       setFinalMarkdown(encodedMarkdown);
     }
-  }, [downloadedMarkdown, languages]);
+  }, [downloadedMarkdown]);
 
   const src = finalMarkdown
     ? `https://markdown.mtfm.io/#?button=hidden&menuhidden=true&tab=1&md=${finalMarkdown}`

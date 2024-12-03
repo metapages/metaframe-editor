@@ -1,23 +1,36 @@
 import {
+  useCallback,
   useEffect,
   useState,
 } from 'react';
 
-import { useMonaco } from '@monaco-editor/react';
+// import { useMonaco } from '@monaco-editor/react';
+import { OnMount } from '@monaco-editor/react';
 
-export const useSupportedLanguages = (): string[] => {
+
+export const useSupportedLanguages = (): [string[], OnMount] => {
   const [currentLanguages, setCurrentLanguages] = useState<string[]>([]);
-  const monaco = useMonaco();
+  // const monaco = useMonaco();
 
-  useEffect(() => {
-    const newLanguages: string[] = monaco?.languages
+  const handleEditorDidMount: OnMount = useCallback((editor, monaco) => {
+    const newLanguages: string[] = monaco.languages
       .getLanguages()
       .reduce((languageList: any, blob: any) => {
         languageList.push(blob.id);
         return languageList;
       }, [] as string[]);
     setCurrentLanguages(newLanguages);
-  }, [monaco]);
+  }, []);
 
-  return currentLanguages;
+  // useEffect(() => {
+  //   const newLanguages: string[] = monaco?.languages
+  //     .getLanguages()
+  //     .reduce((languageList: any, blob: any) => {
+  //       languageList.push(blob.id);
+  //       return languageList;
+  //     }, [] as string[]);
+  //   setCurrentLanguages(newLanguages);
+  // }, [monaco]);
+
+  return [currentLanguages, handleEditorDidMount];
 };

@@ -1,4 +1,6 @@
 import Editor from '@monaco-editor/react';
+import { useSupportedLanguages } from './useSupportedLanguages';
+import { useEffect } from 'react';
 
 export type EditorProps = {
   mode: string;
@@ -8,6 +10,8 @@ export type EditorProps = {
   readOnly?: boolean;
 };
 
+export const SupportedLanguages: {languages: string[]} = {languages: []};
+
 export const MetaframeEditor: React.FC<EditorProps> = ({
   mode,
   value,
@@ -15,6 +19,12 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
   theme,
   readOnly,
 }) => {
+  const [languages, onMount] = useSupportedLanguages();
+  useEffect(() => {
+    if (languages) {
+      SupportedLanguages.languages = languages;
+    }
+  }, [languages]);
   const setEditorTheme = (monaco: any) => {
     monaco.editor.defineTheme('mf-default', {
       base: 'vs',
@@ -32,6 +42,7 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
   // don't have to use 3rem as a magic number
   return (
     <Editor
+      onMount={onMount}
       beforeMount={setEditorTheme}
       language={mode}
       theme={theme}
@@ -42,7 +53,8 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
       onChange={setValue}
       value={value}
       width="100%"
-      height="calc(100vh - 3rem)"
+      // height="calc(100vh - 3rem)"
+      height="100%"
     />
   );
 }

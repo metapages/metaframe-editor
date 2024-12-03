@@ -15,13 +15,14 @@ import {
   VStack,
 } from '@chakra-ui/react';
 
-import { useSupportedLanguages } from '../editor/useSupportedLanguages';
+// import { useSupportedLanguages } from '../editor/useSupportedLanguages';
 import { RadioButtonMode } from './components/RadioButtonMode';
 import {
   Options,
   Theme,
   useOptions,
 } from './useOptions';
+import { SupportedLanguages } from '../editor/MetaframeEditor';
 
 export const defaultOptions: Options = {
   mode: "json",
@@ -54,7 +55,7 @@ interface FormType extends yup.InferType<typeof validationSchema> {}
 
 export const PanelOptions: React.FC = () => {
   const [options, setOptions] = useOptions(defaultOptions);
-  const languages = useSupportedLanguages();
+  // const languages = useSupportedLanguages();
 
   const onSubmit = useCallback(
     (values: FormType) => {
@@ -115,7 +116,7 @@ export const PanelOptions: React.FC = () => {
             value={formik.values.mode || defaultOptions.mode}
             variant="outline"
           >
-            {languages.map((mode) => (
+            {SupportedLanguages.languages.map((mode) => (
               <option key={mode} value={mode}>
                 {mode}
               </option>

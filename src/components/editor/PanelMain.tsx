@@ -27,7 +27,7 @@ import { MetaframeEditor } from './MetaframeEditor';
  * Just an example very basic output of incoming inputs
  *
  */
-export const PanelMain: React.FC = () => {
+export const PanelMain: React.FC<{height?: string}> = ({height}) => {
   const metaframe = useMetaframeAndInput();
   const valueName = useRef<string>("text");
   const lastValue = useRef<string>("");
@@ -197,8 +197,8 @@ export const PanelMain: React.FC = () => {
   ]);
 
   return (
-    <Box w="100%">
-      <VStack spacing={0} align="stretch">
+    <Box w="100%" h={height || "100%"} maxH="100%" overflow="clip">
+      <VStack spacing={0} align="stretch" w="100%" h="100%" maxH="100%">
         {options?.autosend || options?.readOnly ? null : (
           <HStack align="end" p={2}>
               <Tooltip
@@ -218,7 +218,6 @@ export const PanelMain: React.FC = () => {
               </Tooltip>
           </HStack>
         )}
-        <Spacer />
 
         <MetaframeEditor
           mode={options?.mode || "json"}

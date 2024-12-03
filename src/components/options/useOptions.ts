@@ -1,7 +1,8 @@
 import { useHashParamJson } from '@metapages/hash-query';
 import { useEffect } from 'react';
-import { useSupportedLanguages } from '../editor/useSupportedLanguages';
+// import { useSupportedLanguages } from '../editor/useSupportedLanguages';
 import { extensionMap } from '/@/constants/extensionToLanguage';
+import { SupportedLanguages } from '../editor/MetaframeEditor';
 
 export type Theme = "light" | "vs-dark";
 
@@ -18,7 +19,7 @@ const HashKeyOptions = "options";
 
 export const useOptions = (defaultOptions?:Options|undefined): [Options, (o: Options) => void] => {
   const [options, setOptions] = useHashParamJson<Options>(HashKeyOptions, defaultOptions);
-  const languages = useSupportedLanguages();
+  const languages = SupportedLanguages.languages;
 
   useEffect(() => {
     if (languages?.length && options?.mode) {
