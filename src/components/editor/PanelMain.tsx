@@ -197,8 +197,8 @@ export const PanelMain: React.FC<{height?: string}> = ({height}) => {
   ]);
 
   return (
-    <Box w="100%" h={height || "100%"} maxH="100%" overflow="clip">
-      <VStack spacing={0} align="stretch" w="100%" h="100%" maxH="100%">
+    <Box id="panel-main" w="100%" h={height || "100%"} maxH="100%" overflow="clip">
+      <VStack id="vbox-main" spacing={0} align="stretch" w="100%" h="100%" maxH="100%" p={0}>
         {options?.autosend || options?.readOnly ? null : (
           <HStack align="end" p={2}>
               <Tooltip
