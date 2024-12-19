@@ -5,7 +5,7 @@ import { theme } from '/@/theme';
 import { createRoot } from 'react-dom/client';
 
 import { ChakraProvider } from '@chakra-ui/react';
-import { WithMetaframeAndInputs } from '@metapages/metaframe-hook';
+import { WithMetaframeAndInputs } from '@metapages/metapage-react';
 
 import { App } from './App';
 

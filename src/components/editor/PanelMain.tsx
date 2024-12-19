@@ -1,33 +1,22 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useOptions } from '/@/components/options/useOptions';
-import AwesomeDebouncePromise from 'awesome-debounce-promise';
-import { HiOutlineSave } from 'react-icons/hi';
+import { useOptions } from "/@/components/options/useOptions";
+import AwesomeDebouncePromise from "awesome-debounce-promise";
+import { HiOutlineSave } from "react-icons/hi";
 
-import {
-  Box,
-  Button,
-  HStack,
-  Spacer,
-  Tooltip,
-  VStack,
-} from '@chakra-ui/react';
-import { useHashParamBase64 } from '@metapages/hash-query';
-import { useMetaframeAndInput } from '@metapages/metaframe-hook';
-import { MetaframeInputMap } from '@metapages/metapage';
+import { Box, Button, HStack, Spacer, Tooltip, VStack } from "@chakra-ui/react";
+import { useHashParamBase64 } from "@metapages/hash-query";
+import { useMetaframeAndInput } from "@metapages/metapage-react";
+import { MetaframeInputMap } from "@metapages/metapage";
 
-import { MetaframeEditor } from './MetaframeEditor';
+import { MetaframeEditor } from "./MetaframeEditor";
+import { dataRefToFile, isDataRef } from "@metapages/dataref";
 
 /**
  * Just an example very basic output of incoming inputs
  *
  */
-export const PanelMain: React.FC<{height?: string}> = ({height}) => {
+export const PanelMain: React.FC<{ height?: string }> = ({ height }) => {
   const metaframe = useMetaframeAndInput();
   const valueName = useRef<string>("text");
   const lastValue = useRef<string>("");
@@ -73,10 +62,24 @@ export const PanelMain: React.FC<{height?: string}> = ({height}) => {
   );
 
   const setValue = useCallback(
-    (value: string | undefined) => {
+    async (value: any | undefined) => {
       // no non-string values sent
       if (value === null || value === undefined) {
         return;
+      }
+
+      // check needed conversions
+      const isRef = isDataRef(value);
+      if (isRef) {
+        const blob: File = await dataRefToFile(value);
+        value = await blob.text();
+      } else if (typeof value !== "string") {
+        // assume it's JSON
+        if (value instanceof Blob) {
+          value = await (value as Blob).text();
+        } else {
+          value = JSON.stringify(value, null, 2);
+        }
       }
 
       // update the editor definitely
@@ -115,7 +118,7 @@ export const PanelMain: React.FC<{height?: string}> = ({height}) => {
       return;
     }
     const inputKeys = Object.keys(metaframe.inputs);
-    
+
     if (inputKeys.length === 0) {
       return;
     }
@@ -123,11 +126,7 @@ export const PanelMain: React.FC<{height?: string}> = ({height}) => {
     // we initialize this as "text", but if another key is passed it will be used here
     valueName.current = inputKeys[0];
     if (metaframe.inputs[valueName.current]) {
-      const newValue =
-        typeof metaframe.inputs[valueName.current] === "string"
-          ? metaframe.inputs[valueName.current]
-          : JSON.stringify(metaframe.inputs[valueName.current], null, "  ");
-
+      const newValue = metaframe.inputs[valueName.current];
       // Consumers of the metaframe will likely set the value after
       // getting an update, so don't update here if it's the same value
       if (lastValue.current !== newValue) {
@@ -139,7 +138,7 @@ export const PanelMain: React.FC<{height?: string}> = ({height}) => {
 
   useEffect(() => {
     // this should set the value only once so it doesn't clobber local state
-    if (!!localValue && options.blockLocalEditorStateOverwrites) return;
+    if (!!localValue && options?.blockLocalEditorStateOverwrites) return;
 
     const inputs = metaframe?.metaframe?.getInputs();
     if (!inputs) {
@@ -147,13 +146,10 @@ export const PanelMain: React.FC<{height?: string}> = ({height}) => {
     }
 
     setValue(inputs[valueName.current]);
-
   }, [metaframe?.metaframe]);
   /**
    * end: state management for the text
    */
-
-  
 
   // once source of truth: the URL param #?text=<HashParamBase64>
   // if that changes, set the local value
@@ -163,19 +159,14 @@ export const PanelMain: React.FC<{height?: string}> = ({height}) => {
     if (valueHashParam === undefined) {
       return;
     }
-    
+
     if (initialValue.current === undefined) {
       initialValue.current = valueHashParam;
       setLocalValue(valueHashParam);
     }
 
     sendOutputs(valueHashParam);
-  }, [
-    sendOutputs,
-    valueHashParam,
-    initialValue,
-    options?.saveloadinhash,
-  ]);
+  }, [sendOutputs, valueHashParam, initialValue, options?.saveloadinhash]);
 
   const onSave = useCallback(() => {
     if (localValue === null || localValue === undefined) {
@@ -197,25 +188,39 @@ export const PanelMain: React.FC<{height?: string}> = ({height}) => {
   ]);
 
   return (
-    <Box id="panel-main" w="100%" h={height || "100%"} maxH="100%" overflow="clip">
-      <VStack id="vbox-main" spacing={0} align="stretch" w="100%" h="100%" maxH="100%" p={0}>
+    <Box
+      id="panel-main"
+      w="100%"
+      h={height || "100%"}
+      maxH="100%"
+      overflow="clip"
+    >
+      <VStack
+        id="vbox-main"
+        spacing={0}
+        align="stretch"
+        w="100%"
+        h="100%"
+        maxH="100%"
+        p={0}
+      >
         {options?.autosend || options?.readOnly ? null : (
           <HStack align="end" p={2}>
-              <Tooltip
-                label={
-                  options?.saveloadinhash
-                    ? "Save in URL hash"
-                    : "Send to connected metaframes"
-                }
+            <Tooltip
+              label={
+                options?.saveloadinhash
+                  ? "Save in URL hash"
+                  : "Send to connected metaframes"
+              }
+            >
+              <Button
+                onClick={onSave}
+                variant="outline"
+                leftIcon={<HiOutlineSave />}
               >
-                <Button
-                  onClick={onSave}
-                  variant="outline"
-                  leftIcon={<HiOutlineSave />}
-                >
-                  Save
-                </Button>
-              </Tooltip>
+                Save
+              </Button>
+            </Tooltip>
           </HStack>
         )}
 
