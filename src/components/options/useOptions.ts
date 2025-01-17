@@ -1,4 +1,4 @@
-import { useHashParamJson } from '@metapages/hash-query';
+import { useHashParamJson } from '@metapages/hash-query/react-hooks';
 import { useEffect } from 'react';
 // import { useSupportedLanguages } from '../editor/useSupportedLanguages';
 import { extensionMap } from '/@/constants/extensionToLanguage';
@@ -30,5 +30,7 @@ export const useOptions = (defaultOptions?:Options|undefined): [Options, (o: Opt
       }
     }
   }, [options?.mode, languages])
-  return [options, setOptions];
+  return [options || defaultOptions || EmptyOptions, setOptions];
 };
+
+const EmptyOptions:Options = {};

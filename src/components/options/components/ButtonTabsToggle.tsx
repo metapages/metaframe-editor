@@ -18,7 +18,7 @@ export const ButtonTabsToggle: React.FC<{menuhidden:boolean, setMenuHidden:(v:bo
       variant="ghost"
       color="gray.400"
       onClick={toggleMenu}
-      opacity={( mode === "invisible" || mode === "disabled") && menuhidden ? 0 : 1}
+      opacity={( mode === "invisible" || mode === "disabled" || mode === undefined) && menuhidden ? 0 : 1}
       disabled={mode === "disabled" && menuhidden}
       icon={<HamburgerIcon />}
     />

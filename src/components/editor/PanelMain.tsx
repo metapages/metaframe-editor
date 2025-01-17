@@ -5,7 +5,7 @@ import AwesomeDebouncePromise from "awesome-debounce-promise";
 import { HiOutlineSave } from "react-icons/hi";
 
 import { Box, Button, HStack, Spacer, Tooltip, VStack } from "@chakra-ui/react";
-import { useHashParamBase64 } from "@metapages/hash-query";
+import { useHashParamBase64 } from "@metapages/hash-query/react-hooks";
 import { useMetaframeAndInput } from "@metapages/metapage-react";
 import { MetaframeInputMap } from "@metapages/metapage";
 

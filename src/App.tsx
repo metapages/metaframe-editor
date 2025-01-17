@@ -27,14 +27,14 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import {
-  isIframe,
   useHashParam,
-} from '@metapages/hash-query';
+} from '@metapages/hash-query/react-hooks';
 
 import {
   ButtonTabsToggle,
 } from './components/options/components/ButtonTabsToggle';
 import { PanelOptions } from './components/options/PanelOptions';
+import { isIframe } from '@metapages/metapage';
 
 const isFramed = isIframe();
 
@@ -45,7 +45,7 @@ export const App: React.FC = () => {
   const toast = useToast();
 
   if (menuhidden) {
-    // console.log("mode", mode);
+
     if (mode === undefined || mode === "visible" || mode === "invisible") {
 
       return (
@@ -53,15 +53,15 @@ export const App: React.FC = () => {
           <HStack
             style={{ position: "absolute" }}
             width="100%"
-            h="100%"
-            justifyContent="flex-end"
+            justifyContent="flex-start"
+            zIndex={1000}
           >
             <Spacer />
             <Show breakpoint="(min-width: 200px)">
-              <ButtonTabsToggle menuhidden={menuhidden} setMenuHidden={setMenuHidden} mode={mode}/>
+              <ButtonTabsToggle menuhidden={menuhidden} setMenuHidden={setMenuHidden} mode={mode} />
             </Show>
           </HStack>
-          <PanelMain />
+          <PanelMain height="100vh" />
         </>
       );
     } else if (mode === "disabled") {
@@ -69,7 +69,7 @@ export const App: React.FC = () => {
     }
   }
   return (
-    <VStack align="flex-start" w="100%" h="100%">
+    <VStack align="flex-start" w="100%" h="100vh">
       <Tabs index={tab || 0} isLazy={true} onChange={setTab} w="100%" h="100%">
         <TabList>
           <Tab>
@@ -118,7 +118,7 @@ export const App: React.FC = () => {
         </TabList>
 
         <TabPanels>
-          <TabPanel p={0}>
+          <TabPanel p={0} h="calc(100vh - 3rem)">
             <PanelMain />
           </TabPanel>
 
