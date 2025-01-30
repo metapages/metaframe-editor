@@ -38,6 +38,11 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
     monaco.theme = theme
   }
 
+  // hack, there must be a better way to do this
+  if (mode === "py") {
+    mode = "python"
+  }
+
   // TODO: pull content height from mf chakra theme so we
   // don't have to use 3rem as a magic number
   return (
