@@ -67,7 +67,7 @@ _browser_client_build BASE="":
     HOST={{APP_FQDN}} \
     OUTDIR=./docs \
     BASE={{BASE}} \
-        deno run --allow-all --unstable {{DENO_SOURCE}}/browser/vite-build.ts --versioning=true
+        deno run --allow-all {{DENO_SOURCE}}/browser/vite-build.ts --versioning=true
 
 # Test: currently bare minimum: only building. Need proper test harness.
 @test: (_tsc "--build") build
@@ -99,7 +99,7 @@ _tsc +args="": _ensure_npm_modules
 
 # DEV: generate TLS certs for HTTPS over localhost https://blog.filippo.io/mkcert-valid-https-certificates-for-localhost/
 @_mkcert:
-    APP_FQDN={{APP_FQDN}} CERTS_DIR=.certs deno run --allow-all --unstable {{DENO_SOURCE}}/commands/ensure_mkcert.ts
+    APP_FQDN={{APP_FQDN}} CERTS_DIR=.certs deno run --allow-all {{DENO_SOURCE}}/commands/ensure_mkcert.ts
 
 @_ensure_npm_modules:
     if [ ! -f "{{tsc}}" ]; then npm i; fi
@@ -111,10 +111,10 @@ _tsc +args="": _ensure_npm_modules
 # update "gh-pages" branch with the (versioned and default) current build (./docs) (and keeping all previous versions)
 @_githubpages_publish: _ensure_npm_modules
     BASE=$(if [ -f "public/CNAME" ]; then echo ""; else echo "{{PACKAGE_NAME_SHORT}}"; fi) \
-        deno run --unstable --allow-all {{DENO_SOURCE}}/browser/gh-pages-publish-to-docs.ts --versioning=true
+        deno run --allow-all {{DENO_SOURCE}}/browser/gh-pages-publish-to-docs.ts --versioning=true
 
 @_cloudflare_pages_publish: _ensure_npm_modules
-    deno run --unstable --allow-all {{DENO_SOURCE}}/browser/gh-pages-publish-to-docs.ts --versioning=true
+    deno run --allow-all {{DENO_SOURCE}}/browser/gh-pages-publish-to-docs.ts --versioning=true
 
 _ensureGitPorcelain:
     #!/usr/bin/env bash
@@ -122,7 +122,7 @@ _ensureGitPorcelain:
     # In github actions, we modify .github/actions/cloud/action.yml for reasons
     # so do not do this check there
     if [ "${GITHUB_WORKSPACE}" = "" ]; then
-        deno run --allow-all --unstable {{DENO_SOURCE}}/git/git-fail-if-uncommitted-files.ts
+        deno run --allow-all {{DENO_SOURCE}}/git/git-fail-if-uncommitted-files.ts
     fi
 
 _fix_git_actions_permission:

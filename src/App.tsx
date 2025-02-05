@@ -2,9 +2,9 @@ import '/@/app.css';
 
 import { useState } from 'react';
 
+import { FiSettings } from 'react-icons/fi';
 import { PanelMain } from '/@/components/editor/PanelMain';
 import { PanelHelp } from '/@/components/help/PanelHelp';
-import { FiSettings } from 'react-icons/fi';
 
 import {
   CopyIcon,
@@ -30,11 +30,11 @@ import {
   useHashParam,
 } from '@metapages/hash-query/react-hooks';
 
+import { isIframe } from '@metapages/metapage';
 import {
   ButtonTabsToggle,
 } from './components/options/components/ButtonTabsToggle';
 import { PanelOptions } from './components/options/PanelOptions';
-import { isIframe } from '@metapages/metapage';
 
 const isFramed = isIframe();
 
@@ -51,12 +51,10 @@ export const App: React.FC = () => {
       return (
         <>
           <HStack
-            style={{ position: "absolute" }}
-            width="100%"
-            justifyContent="flex-start"
+            style={{ position: "absolute", right: 0 }}
+            justifyContent="flex-end"
             zIndex={1000}
           >
-            <Spacer />
             <Show breakpoint="(min-width: 200px)">
               <ButtonTabsToggle menuhidden={menuhidden} setMenuHidden={setMenuHidden} mode={mode} />
             </Show>
