@@ -81,9 +81,6 @@ export const PanelMain: React.FC<{ height?: string }> = ({ height }) => {
           fetchOptions = {
             // Add cache busting for Chrome
             cache: 'no-store',
-            headers: {
-              'Cache-Control': 'no-cache'
-            }
           }
         }
         const blob: File = await dataRefToFile(ref, { fetchOptions });
