@@ -10,7 +10,7 @@ import { useMetaframeAndInput } from "@metapages/metapage-react";
 import { MetaframeInputMap } from "@metapages/metapage";
 
 import { MetaframeEditor } from "./MetaframeEditor";
-import { dataRefToFile, isDataRef } from "@metapages/dataref";
+import { DataRef, dataRefToFile, isDataRef } from "@metapages/dataref";
 
 /**
  * Just an example very basic output of incoming inputs
@@ -71,18 +71,22 @@ export const PanelMain: React.FC<{ height?: string }> = ({ height }) => {
       // check needed conversions
       const isRef = isDataRef(value);
       if (isRef) {
+        let ref :DataRef = value;
         // Chrome has a bug where it caches requests ignoring the vary header
         // so that the same request from two origins (common with us with iframes)
         // consuming the same presigned URL) will fail on the second request.
         // https://issues.chromium.org/issues/41025985
-        const fetchOptions :RequestInit | undefined = /Chrome/.test(navigator.userAgent) ? {
-          // Add cache busting for Chrome
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache'
+        let fetchOptions :RequestInit | undefined;
+        if (/Chrome/.test(navigator.userAgent)) {
+          fetchOptions = {
+            // Add cache busting for Chrome
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache'
+            }
           }
-        } : undefined;
-        const blob: File = await dataRefToFile(value, { fetchOptions });
+        }
+        const blob: File = await dataRefToFile(ref, { fetchOptions });
         value = await blob.text();
       } else if (typeof value !== "string") {
         // assume it's JSON
