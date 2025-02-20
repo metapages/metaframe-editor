@@ -71,7 +71,18 @@ export const PanelMain: React.FC<{ height?: string }> = ({ height }) => {
       // check needed conversions
       const isRef = isDataRef(value);
       if (isRef) {
-        const blob: File = await dataRefToFile(value);
+        // Chrome has a bug where it caches requests ignoring the vary header
+        // so that the same request from two origins (common with us with iframes)
+        // consuming the same presigned URL) will fail on the second request.
+        // https://issues.chromium.org/issues/41025985
+        const fetchOptions :RequestInit | undefined = /Chrome/.test(navigator.userAgent) ? {
+          // Add cache busting for Chrome
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        } : undefined;
+        const blob: File = await dataRefToFile(value, { fetchOptions });
         value = await blob.text();
       } else if (typeof value !== "string") {
         // assume it's JSON
@@ -126,7 +137,11 @@ export const PanelMain: React.FC<{ height?: string }> = ({ height }) => {
     // we initialize this as "text", but if another key is passed it will be used here
     valueName.current = inputKeys[0];
     if (metaframe.inputs[valueName.current]) {
-      const newValue = metaframe.inputs[valueName.current];
+      let newValue = metaframe.inputs[valueName.current];
+
+
+      
+      
       // Consumers of the metaframe will likely set the value after
       // getting an update, so don't update here if it's the same value
       if (lastValue.current !== newValue) {
