@@ -1,7 +1,7 @@
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
-import { useFormik } from 'formik';
-import * as yup from 'yup';
+import { useFormik } from "formik";
+import * as yup from "yup";
 
 import {
   Button,
@@ -13,16 +13,12 @@ import {
   Select,
   Stack,
   VStack,
-} from '@chakra-ui/react';
+} from "@chakra-ui/react";
 
 // import { useSupportedLanguages } from '../editor/useSupportedLanguages';
-import { RadioButtonMode } from './components/RadioButtonMode';
-import {
-  Options,
-  Theme,
-  useOptions,
-} from './useOptions';
-import { SupportedLanguages } from '../editor/MetaframeEditor';
+import { RadioButtonMode } from "./components/RadioButtonMode";
+import { Options, Theme, useOptions } from "./useOptions";
+import { SupportedLanguages } from "../editor/MetaframeEditor";
 
 export const defaultOptions: Options = {
   mode: "json",
@@ -36,7 +32,9 @@ const OptionDescription: Record<string, string> = {
   saveloadinhash: "Persist text in URL hash",
   theme: "Light/Dark theme",
   readOnly: "Readonly",
-  blockLocalEditorStateOverwrites: "Block updates the overwrite the editor's local state"
+  blockLocalEditorStateOverwrites:
+    "Block updates the overwrite the editor's local state",
+  hideLineNumbers: "Hide line numbers",
 };
 
 const validationSchema = yup.object({
@@ -50,6 +48,7 @@ const validationSchema = yup.object({
   saveloadinhash: yup.boolean().notRequired(),
   readOnly: yup.boolean().notRequired(),
   blockLocalEditorStateOverwrites: yup.boolean().notRequired(),
+  hideLineNumbers: yup.boolean().notRequired(),
 });
 interface FormType extends yup.InferType<typeof validationSchema> {}
 
@@ -68,6 +67,9 @@ export const PanelOptions: React.FC = () => {
       }
       if (!newOptions.readOnly) {
         delete newOptions.readOnly;
+      }
+      if (!newOptions.hideLineNumbers) {
+        delete newOptions.hideLineNumbers;
       }
       if (!newOptions.blockLocalEditorStateOverwrites) {
         delete newOptions.blockLocalEditorStateOverwrites;

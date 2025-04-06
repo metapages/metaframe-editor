@@ -1,6 +1,6 @@
-import Editor from '@monaco-editor/react';
-import { useSupportedLanguages } from './useSupportedLanguages';
-import { useEffect } from 'react';
+import Editor from "@monaco-editor/react";
+import { useSupportedLanguages } from "./useSupportedLanguages";
+import { useEffect } from "react";
 
 export type EditorProps = {
   mode: string;
@@ -8,9 +8,10 @@ export type EditorProps = {
   setValue: (value: string | undefined) => void;
   theme: string;
   readOnly?: boolean;
+  hideLineNumbers?: boolean;
 };
 
-export const SupportedLanguages: {languages: string[]} = {languages: []};
+export const SupportedLanguages: { languages: string[] } = { languages: [] };
 
 export const MetaframeEditor: React.FC<EditorProps> = ({
   mode,
@@ -18,6 +19,7 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
   setValue,
   theme,
   readOnly,
+  hideLineNumbers,
 }) => {
   const [languages, onMount] = useSupportedLanguages();
   useEffect(() => {
@@ -26,21 +28,21 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
     }
   }, [languages]);
   const setEditorTheme = (monaco: any) => {
-    monaco.editor.defineTheme('mf-default', {
-      base: 'vs',
+    monaco.editor.defineTheme("mf-default", {
+      base: "vs",
       inherit: true,
       rules: [],
       colors: {
-          'editor.background': '#f8f8f8',
+        "editor.background": "#f8f8f8",
       },
       fontFamily: `'JetBrains Mono Variable', monospace`,
     });
-    monaco.theme = theme
-  }
+    monaco.theme = theme;
+  };
 
   // hack, there must be a better way to do this
   if (mode === "py") {
-    mode = "python"
+    mode = "python";
   }
 
   // TODO: pull content height from mf chakra theme so we
@@ -54,6 +56,7 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
       options={{
         minimap: { enabled: false },
         readOnly,
+        lineNumbers: hideLineNumbers ? "off" : undefined,
       }}
       onChange={setValue}
       value={value}
@@ -62,4 +65,4 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
       height="100%"
     />
   );
-}
+};

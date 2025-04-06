@@ -71,17 +71,17 @@ export const PanelMain: React.FC<{ height?: string }> = ({ height }) => {
       // check needed conversions
       const isRef = isDataRef(value);
       if (isRef) {
-        let ref :DataRef = value;
+        let ref: DataRef = value;
         // Chrome has a bug where it caches requests ignoring the vary header
         // so that the same request from two origins (common with us with iframes)
         // consuming the same presigned URL) will fail on the second request.
         // https://issues.chromium.org/issues/41025985
-        let fetchOptions :RequestInit | undefined;
+        let fetchOptions: RequestInit | undefined;
         if (/Chrome/.test(navigator.userAgent)) {
           fetchOptions = {
             // Add cache busting for Chrome
-            cache: 'no-store',
-          }
+            cache: "no-store",
+          };
         }
         const blob: File = await dataRefToFile(ref, { fetchOptions });
         value = await blob.text();
@@ -140,9 +140,6 @@ export const PanelMain: React.FC<{ height?: string }> = ({ height }) => {
     if (metaframe.inputs[valueName.current]) {
       let newValue = metaframe.inputs[valueName.current];
 
-
-      
-      
       // Consumers of the metaframe will likely set the value after
       // getting an update, so don't update here if it's the same value
       if (lastValue.current !== newValue) {
@@ -246,6 +243,7 @@ export const PanelMain: React.FC<{ height?: string }> = ({ height }) => {
           setValue={setValue}
           value={localValue}
           readOnly={options?.readOnly}
+          hideLineNumbers={options?.hideLineNumbers}
         />
       </VStack>
     </Box>
