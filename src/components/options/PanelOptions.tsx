@@ -35,6 +35,7 @@ const OptionDescription: Record<string, string> = {
   blockLocalEditorStateOverwrites:
     "Block updates the overwrite the editor's local state",
   hideLineNumbers: "Hide line numbers",
+  autoFocus: "Auto-focus the text area when editor loads",
 };
 
 const validationSchema = yup.object({
@@ -49,6 +50,7 @@ const validationSchema = yup.object({
   readOnly: yup.boolean().notRequired(),
   blockLocalEditorStateOverwrites: yup.boolean().notRequired(),
   hideLineNumbers: yup.boolean().notRequired(),
+  autoFocus: yup.boolean().notRequired(),
 });
 interface FormType extends yup.InferType<typeof validationSchema> {}
 
@@ -73,6 +75,9 @@ export const PanelOptions: React.FC = () => {
       }
       if (!newOptions.blockLocalEditorStateOverwrites) {
         delete newOptions.blockLocalEditorStateOverwrites;
+      }
+      if (!newOptions.autoFocus) {
+        delete newOptions.autoFocus;
       }
       if (newOptions.theme === defaultOptions.theme) {
         delete newOptions.theme;

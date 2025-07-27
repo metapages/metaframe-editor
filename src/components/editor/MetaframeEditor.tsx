@@ -1,6 +1,6 @@
 import Editor from "@monaco-editor/react";
 import { useSupportedLanguages } from "./useSupportedLanguages";
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 export type EditorProps = {
   mode: string;
@@ -9,6 +9,7 @@ export type EditorProps = {
   theme: string;
   readOnly?: boolean;
   hideLineNumbers?: boolean;
+  autoFocus?: boolean;
 };
 
 export const SupportedLanguages: { languages: string[] } = { languages: [] };
@@ -20,13 +21,26 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
   theme,
   readOnly,
   hideLineNumbers,
+  autoFocus,
 }) => {
+  const editorRef = useRef<any>(null);
   const [languages, onMount] = useSupportedLanguages();
+  
   useEffect(() => {
     if (languages) {
       SupportedLanguages.languages = languages;
     }
   }, [languages]);
+
+  const handleEditorDidMount = useCallback((editor: any, monaco: any) => {
+    editorRef.current = editor;
+    onMount(editor, monaco);
+    
+    if (autoFocus) {
+      editor.focus();
+    }
+  }, [autoFocus, onMount]);
+  
   const setEditorTheme = (monaco: any) => {
     monaco.editor.defineTheme("mf-default", {
       base: "vs",
@@ -49,7 +63,7 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
   // don't have to use 3rem as a magic number
   return (
     <Editor
-      onMount={onMount}
+      onMount={handleEditorDidMount}
       beforeMount={setEditorTheme}
       language={mode}
       theme={theme}
