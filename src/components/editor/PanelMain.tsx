@@ -159,7 +159,7 @@ export const PanelMain: React.FC<{ height?: string }> = ({ height }) => {
     }
 
     setValue(inputs[valueName.current]);
-  }, [metaframe?.metaframe]);
+  }, [metaframe?.metaframe, options?.blockLocalEditorStateOverwrites]);
   /**
    * end: state management for the text
    */
