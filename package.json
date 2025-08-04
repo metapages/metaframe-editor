@@ -26,7 +26,7 @@
     "@emotion/styled": "^11.10.4",
     "@fontsource-variable/jetbrains-mono": "^5.0.22",
     "@metapages/dataref": "^0.6.1",
-    "@metapages/hash-query": "^0.8.4",
+    "@metapages/hash-query": "^0.8.0",
     "@metapages/metapage": "^1.8.3",
     "@metapages/metapage-react": "^0.2.4",
     "@monaco-editor/react": "^4.2.2",
@@ -47,7 +47,7 @@
     "vite": "^6.0.7"
   },
   "engines": {
-    "node": "14.x"
+    "node": ">=20"
   },
   "browserslist": {
     "production": [
