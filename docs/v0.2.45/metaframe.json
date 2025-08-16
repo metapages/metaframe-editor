@@ -1,0 +1,12 @@
+{
+	"version": "1",
+	"metadata": {
+		"title": "Text and code editor"
+	},
+	"inputs": {
+		"text": {}
+	},
+    "outputs": {
+		"text": {}
+	}
+}
