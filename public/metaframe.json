@@ -1,14 +1,12 @@
 {
-	"version": "0.3",
+	"version": "1",
 	"metadata": {
-		"title": "Edit"
+		"title": "Text and code editor"
 	},
 	"inputs": {
-		"metapage/definition": {},
 		"text": {}
 	},
     "outputs": {
-		"metapage/definition": {},
 		"text": {}
 	}
 }
