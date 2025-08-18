@@ -103,7 +103,7 @@ The text is simply encoded as follows:
 
 ```typescript
 export const encodeText = (text: string) => {
-  var b64 = window.btoa(encodeURIComponent(text));
+  var b64 = globalThis.btoa(text);
   return b64;
 };
 

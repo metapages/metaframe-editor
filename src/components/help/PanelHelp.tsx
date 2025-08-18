@@ -4,13 +4,14 @@ import {
 } from 'react';
 
 import { Box } from '@chakra-ui/react';
+
 import { SupportedLanguages } from '../editor/MetaframeEditor';
 
 // import { useSupportedLanguages } from '../editor/useSupportedLanguages';
 
 // Not used yet, but here as a reference
 const encodeMarkdown = (md: string) => {
-  var b64 = window.btoa(encodeURIComponent(md));
+  var b64 = globalThis.btoa(md);
   return b64;
 };
 
