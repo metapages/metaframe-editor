@@ -8,5 +8,11 @@
 	},
     "outputs": {
 		"text": {}
-	}
+	},
+	"hashParams": [
+    "edit",
+    "hm",
+		"text",
+		"options"
+  ]
 }
