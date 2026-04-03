@@ -3,6 +3,7 @@ import { resolve } from 'path';
 import { defineConfig } from 'vite';
 
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 
 type DeployTargetType = "glitch" | "lib";
 // values acted on: [glitch | lib]
@@ -32,6 +33,19 @@ export default defineConfig(({ command, mode }) => ({
   },
   plugins: [
     react(),
+    VitePWA({
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
+      registerType: "autoUpdate",
+      manifest: false,
+      injectManifest: {
+        globPatterns: ["**/*.{js,css,html,ico,woff2,webmanifest}"],
+      },
+      devOptions: {
+        enabled: false,
+      },
+    }),
   ],
   build: {
     outDir: DEPLOY_TARGET === "lib" ? "dist" : OUTDIR,
