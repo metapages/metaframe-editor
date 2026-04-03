@@ -1,6 +1,6 @@
 {
-  "short_name": "metaframe-template",
-  "name": "metaframe-template",
+  "short_name": "Editor",
+  "name": "Metaframe Editor",
   "icons": [
     {
       "src": "favicon.ico",
