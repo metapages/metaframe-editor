@@ -15,6 +15,7 @@ export type Options = {
   blockLocalEditorStateOverwrites?: boolean;
   hideLineNumbers?: boolean;
   autoFocus?: boolean;
+  wordWrap?: boolean;
 };
 
 const HashKeyOptions = "options";

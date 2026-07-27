@@ -10,6 +10,7 @@ export type EditorProps = {
   readOnly?: boolean;
   hideLineNumbers?: boolean;
   autoFocus?: boolean;
+  wordWrap?: boolean;
 };
 
 export const SupportedLanguages: { languages: string[] } = { languages: [] };
@@ -22,6 +23,7 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
   readOnly,
   hideLineNumbers,
   autoFocus,
+  wordWrap,
 }) => {
   const editorRef = useRef<any>(null);
   const [languages, onMount] = useSupportedLanguages();
@@ -71,6 +73,7 @@ export const MetaframeEditor: React.FC<EditorProps> = ({
         minimap: { enabled: false },
         readOnly,
         lineNumbers: hideLineNumbers ? "off" : undefined,
+        wordWrap: wordWrap ? "on" : "off",
       }}
       onChange={setValue}
       value={value}
