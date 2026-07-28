@@ -1,0 +1,18 @@
+{
+	"version": "2",
+	"metadata": {
+		"title": "Text and code editor"
+	},
+	"inputs": {
+		"text": {}
+	},
+    "outputs": {
+		"text": {}
+	},
+	"hashParams": [
+    "edit",
+    "hm",
+		"text",
+		"options"
+  ]
+}
