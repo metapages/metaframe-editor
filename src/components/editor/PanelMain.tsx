@@ -245,6 +245,7 @@ export const PanelMain: React.FC<{ height?: string }> = ({ height }) => {
           readOnly={options?.readOnly}
           hideLineNumbers={options?.hideLineNumbers}
           autoFocus={options?.autoFocus}
+          wordWrap={options?.wordWrap}
         />
       </VStack>
     </Box>
